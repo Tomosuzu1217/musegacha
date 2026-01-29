@@ -199,6 +199,17 @@ export interface UserInterestProfile {
   lastUpdatedAt: number;
 }
 
+// --- Core Insights (Self-Discovery) ---
+
+export interface CoreInsights {
+  coreValues: string[];
+  patterns: string[];
+  growthAreas: string[];
+  narrative: string;
+  generatedAt: number;
+  basedOnSessions: number;
+}
+
 // --- Activity Log ---
 
 export type ActivityType = 'consultation' | 'question_generated' | 'session_completed' | 'gacha_spin';

@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ConsultSession, ConsultMessage, Question, UserInterestProfile } from '../types';
+import { ConsultSession, ConsultMessage, Question, UserInterestProfile, CoreInsights } from '../types';
 import { storageService } from '../services/storageService';
-import { generateConsultResponse, generateQuestionsFromConsultation } from '../services/geminiService';
+import { generateConsultResponse, generateQuestionsFromConsultation, synthesizeCoreInsights } from '../services/geminiService';
 
 export const ConsultChat: React.FC = () => {
   const [view, setView] = useState<'list' | 'chat'>('list');
@@ -13,6 +13,8 @@ export const ConsultChat: React.FC = () => {
   const [generatedCount, setGeneratedCount] = useState(0);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [profile, setProfile] = useState<UserInterestProfile | null>(null);
+  const [coreInsights, setCoreInsights] = useState<CoreInsights | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -27,6 +29,7 @@ export const ConsultChat: React.FC = () => {
   useEffect(() => {
     loadSessions();
     refreshProfile();
+    setCoreInsights(storageService.getCoreInsights());
   }, [loadSessions, refreshProfile]);
 
   useEffect(() => {
@@ -116,6 +119,24 @@ export const ConsultChat: React.FC = () => {
     });
 
     return updated;
+  };
+
+  const handleAnalyzeCore = async () => {
+    if (!profile || sessions.length < 2) return;
+    setIsAnalyzing(true);
+    try {
+      const sessionData = sessions.slice(0, 8).map(s => ({
+        themes: s.themes,
+        messages: s.messages.map(m => ({ role: m.role, text: m.text })),
+      }));
+      const insights = await synthesizeCoreInsights(sessionData, profile);
+      storageService.saveCoreInsights(insights);
+      setCoreInsights(insights);
+    } catch (e) {
+      console.error('Core analysis failed', e);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleSend = async () => {
@@ -307,16 +328,85 @@ export const ConsultChat: React.FC = () => {
           </div>
         )}
 
+        {/* Core Insights */}
+        {profile && sessions.length >= 2 && (
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">CORE ANALYSIS</p>
+              <button
+                onClick={handleAnalyzeCore}
+                disabled={isAnalyzing}
+                className="text-[10px] font-bold uppercase px-3 py-1.5 bg-black text-white rounded-full disabled:opacity-30 active:scale-95 transition-all"
+              >
+                {isAnalyzing ? '分析中...' : coreInsights ? '再分析' : '自分のコアを発見'}
+              </button>
+            </div>
+
+            {coreInsights ? (
+              <div className="space-y-4">
+                {/* Narrative */}
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <p className="text-sm leading-relaxed text-gray-700">{coreInsights.narrative}</p>
+                </div>
+
+                {/* Core Values */}
+                <div>
+                  <p className="text-[9px] font-bold font-mono text-gray-400 uppercase mb-2">Core Values</p>
+                  <div className="flex flex-wrap gap-2">
+                    {coreInsights.coreValues.map((v, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-black text-white text-xs font-bold rounded-full">{v}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Patterns */}
+                <div>
+                  <p className="text-[9px] font-bold font-mono text-gray-400 uppercase mb-2">Patterns</p>
+                  <div className="space-y-1.5">
+                    {coreInsights.patterns.map((p, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-[8px] font-bold text-gray-500">{i + 1}</span>
+                        </span>
+                        <p className="text-xs text-gray-600 leading-relaxed">{p}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Growth Areas */}
+                <div>
+                  <p className="text-[9px] font-bold font-mono text-gray-400 uppercase mb-2">Growth Areas</p>
+                  <div className="space-y-1.5">
+                    {coreInsights.growthAreas.map((g, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="text-xs text-gray-400">+</span>
+                        <p className="text-xs text-gray-600 leading-relaxed">{g}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-[9px] font-mono text-gray-300 text-right">
+                  {new Date(coreInsights.generatedAt).toLocaleDateString()} / {coreInsights.basedOnSessions} sessions
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-4">
+                相談を重ねるほど、あなたのコアが見えてきます
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Profile Summary */}
-        {(() => {
-          const profile = storageService.getUserProfile();
-          if (profile.totalConsultations === 0) return null;
+        {profile && profile.totalConsultations > 0 && (() => {
           const topThemes = Object.entries(profile.themes)
             .sort(([,a], [,b]) => b - a)
             .slice(0, 5);
           return (
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">YOUR PROFILE</p>
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">STATS</p>
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-lg font-bold font-display">{profile.totalConsultations}</p>

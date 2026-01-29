@@ -31,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 mb-20 md:mb-0 relative z-[55] overflow-x-hidden">
+      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 mb-20 md:mb-0 relative z-10 overflow-x-hidden">
         {children}
       </main>
 

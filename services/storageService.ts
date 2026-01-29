@@ -1,5 +1,5 @@
 
-import { Question, Answer, StoredImage, PersonaConfig, CharacterProfile, SavedConversation, ChatMessage, ConsultSession, UserInterestProfile, ActivityLogEntry } from '../types';
+import { Question, Answer, StoredImage, PersonaConfig, CharacterProfile, SavedConversation, ChatMessage, ConsultSession, UserInterestProfile, ActivityLogEntry, CoreInsights } from '../types';
 
 const KEYS = {
   QUESTIONS: 'musegacha_questions',
@@ -13,6 +13,7 @@ const KEYS = {
   CONSULT_SESSIONS: 'musegacha_consult_sessions',
   USER_PROFILE: 'musegacha_user_profile',
   ACTIVITY_LOG: 'musegacha_activity_log',
+  CORE_INSIGHTS: 'musegacha_core_insights',
 };
 
 // --- Security Configuration ---
@@ -4565,6 +4566,18 @@ export const storageService = {
     };
     const updated = [newEntry, ...log].slice(0, SECURITY_CONFIG.MAX_ACTIVITY_LOG_ENTRIES);
     localStorage.setItem(KEYS.ACTIVITY_LOG, JSON.stringify(updated));
+  },
+
+  // --- Core Insights ---
+  getCoreInsights: (): CoreInsights | null => {
+    const data = localStorage.getItem(KEYS.CORE_INSIGHTS);
+    if (!data) return null;
+    return safeJsonParse<CoreInsights | null>(data, null);
+  },
+
+  saveCoreInsights: (insights: CoreInsights): void => {
+    if (!checkStorageQuota()) return;
+    localStorage.setItem(KEYS.CORE_INSIGHTS, JSON.stringify(insights));
   },
 
   // Clear all with confirmation (returns cleared status)

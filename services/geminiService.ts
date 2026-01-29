@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Modality } from '@google/genai';
-import { Question, OutputFormat, Difficulty, Character, NewspaperContent, NoteArticleContent, ChatMessage, CharacterComment, UserInterestProfile, PRESET_TAGS } from '../types';
+import { Question, OutputFormat, Difficulty, Character, NewspaperContent, NoteArticleContent, ChatMessage, CharacterComment, UserInterestProfile, CoreInsights, PRESET_TAGS } from '../types';
 import { storageService } from './storageService';
 import { apiKeyRotation } from './apiKeyRotation';
 
@@ -1923,6 +1923,83 @@ export const generateQuestionsFromConsultation = async (
   } catch (e) {
     logger.error('Consultation question generation failed', e);
     return [];
+  }
+};
+
+// --- Core Insights Synthesis ---
+
+export const synthesizeCoreInsights = async (
+  sessions: { themes: string[]; messages: { role: string; text: string }[] }[],
+  profile: UserInterestProfile
+): Promise<CoreInsights> => {
+  await rateLimiter.waitForNext();
+  const ai = getClient();
+
+  const topThemes = Object.entries(profile.themes)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10)
+    .map(([t, c]) => `${t}(${c}回)`)
+    .join(', ');
+
+  const concerns = profile.recentConcerns.slice(0, 5).join(' / ');
+
+  const sessionSummaries = sessions.slice(0, 8).map((s, i) => {
+    const userMsgs = s.messages
+      .filter(m => m.role === 'user')
+      .map(m => sanitizePromptInput(m.text.slice(0, 200)))
+      .join(' ');
+    return `セッション${i + 1} [テーマ: ${s.themes.join(', ')}]: ${userMsgs.slice(0, 300)}`;
+  }).join('\n');
+
+  const prompt = `あなたは深層心理分析の専門家です。
+ユーザーの相談履歴を分析し、その人の「コア」を見つけてください。
+
+【データ】
+よく出るテーマ: ${topThemes || 'なし'}
+最近の関心事: ${sanitizePromptInput(concerns) || 'なし'}
+相談セッション数: ${profile.totalConsultations}
+
+【相談内容の要約】
+${sessionSummaries}
+
+【分析してほしいこと】
+1. coreValues: この人が大切にしている価値観（3つ）
+2. patterns: 思考や行動のパターン（3つ）
+3. growthAreas: 成長のポイント・伸びしろ（2つ）
+4. narrative: この人への短いメッセージ（100〜150文字、共感的で前向き、「あなたは〜」で始める）
+
+JSONで出力してください。`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            coreValues: { type: Type.ARRAY, items: { type: Type.STRING } },
+            patterns: { type: Type.ARRAY, items: { type: Type.STRING } },
+            growthAreas: { type: Type.ARRAY, items: { type: Type.STRING } },
+            narrative: { type: Type.STRING },
+          },
+          required: ['coreValues', 'patterns', 'growthAreas', 'narrative'],
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || '{}');
+    return {
+      coreValues: parsed.coreValues || [],
+      patterns: parsed.patterns || [],
+      growthAreas: parsed.growthAreas || [],
+      narrative: parsed.narrative || '',
+      generatedAt: Date.now(),
+      basedOnSessions: sessions.length,
+    };
+  } catch (e) {
+    logger.error('Core insights synthesis failed', e);
+    throw e;
   }
 };
 
