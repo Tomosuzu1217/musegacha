@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ef4444" />
+
+  <!-- Security Headers (meta-compatible only) -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+  <!-- Content Security Policy (meta-compatible directives only) -->
+  <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://esm.sh;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob:;
+      media-src 'self' blob:;
+      connect-src 'self' https://generativelanguage.googleapis.com https://esm.sh wss://generativelanguage.googleapis.com;
+      base-uri 'self';
+      form-action 'self';
+    " />
+
+  <title>MuseGacha - Intellectual Alter Ego</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+
+  <!-- Suppress Tailwind CDN warning (dev environment only) -->
+  <script>
+    (function () {
+      const originalWarn = console.warn;
+      console.warn = function (...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+          return; // Suppress this specific warning
+        }
+        originalWarn.apply(console, args);
+      };
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('[PWA] Service Worker registered:', reg.scope))
+          .catch((err) => console.warn('[PWA] Service Worker registration failed:', err));
+      });
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&family=Zen+Kaku+Gothic+New:wght@400;700&family=Shippori+Mincho:wght@400;700&family=Yomogi&display=swap');
+
+    :root {
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --safe-bottom: env(safe-area-inset-bottom);
+      /* Modern color palette */
+      --color-bg-dark: #0f0f23;
+      --color-bg-gradient-start: #1a1a2e;
+      --color-bg-gradient-end: #16213e;
+      --color-accent-red: #ef4444;
+      --color-accent-blue: #3b82f6;
+      --color-accent-purple: #8b5cf6;
+      --color-neon-glow: rgba(239, 68, 68, 0.5);
+    }
+
+    /* Safe area utilities */
+    .safe-area-inset {
+      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .safe-top {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+
+    .safe-bottom {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: #ffffff;
+      color: #000000;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .font-display {
+      font-family: var(--font-display);
+    }
+
+    /* Hide Scrollbar but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Utility for grid lines */
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px),
+        linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
+    }
+
+    /* Dark grid for debate mode */
+    .bg-grid-dark {
+      background-size: 60px 60px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+
+    /* Glassmorphism */
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-white {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Neon glow effects */
+    .glow-red {
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5), 0 0 40px rgba(239, 68, 68, 0.3);
+    }
+
+    .glow-blue {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Animations */
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2);
+        transform: scale(1);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4);
+        transform: scale(1.02);
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes wave {
+
+      0%,
+      100% {
+        transform: scaleY(1);
+      }
+
+      50% {
+        transform: scaleY(1.5);
+      }
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    @keyframes gradient-shift {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .animate-pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .animate-shimmer {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    .animate-gradient {
+      background-size: 200% 200%;
+      animation: gradient-shift 4s ease infinite;
+    }
+
+    /* Voice wave bars */
+    .voice-bar {
+      animation: wave 0.5s ease-in-out infinite;
+    }
+
+    .voice-bar:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .voice-bar:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .voice-bar:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .voice-bar:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    .voice-bar:nth-child(5) {
+      animation-delay: 0.4s;
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #ef4444, #f97316, #eab308);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Dark theme gradient background */
+    .bg-debate-dark {
+      background: linear-gradient(135deg, var(--color-bg-dark) 0%, var(--color-bg-gradient-start) 50%, var(--color-bg-gradient-end) 100%);
+    }
+
+    /* ========================================
+       PREMIUM BACKGROUND STYLES (Orbital/LENZ inspired)
+       ======================================== */
+
+    /* Premium dark gradient base */
+    .bg-premium {
+      background: linear-gradient(135deg,
+          #0a0a14 0%,
+          #0f0f1f 25%,
+          #141428 50%,
+          #0f0f1f 75%,
+          #0a0a14 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated gradient mesh overlay */
+    .bg-gradient-mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(120, 80, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 80, 120, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 60% at 60% 80%, rgba(80, 200, 255, 0.12) 0%, transparent 50%);
+      animation: mesh-shift 20s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes mesh-shift {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+
+      33% {
+        opacity: 0.8;
+        transform: scale(1.05) rotate(1deg);
+      }
+
+      66% {
+        opacity: 0.9;
+        transform: scale(0.98) rotate(-1deg);
+      }
+    }
+
+    /* Floating orb particles */
+    .particle-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      animation: float-orb 15s ease-in-out infinite;
+    }
+
+    .particle-orb-1 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+      top: 10%;
+      left: -5%;
+      animation-delay: 0s;
+    }
+
+    .particle-orb-2 {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
+      top: 60%;
+      right: -5%;
+      animation-delay: -5s;
+    }
+
+    .particle-orb-3 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+      bottom: 10%;
+      left: 30%;
+      animation-delay: -10s;
+    }
+
+    @keyframes float-orb {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      25% {
+        transform: translate(30px, -40px) scale(1.1);
+      }
+
+      50% {
+        transform: translate(-20px, 20px) scale(0.95);
+      }
+
+      75% {
+        transform: translate(40px, 30px) scale(1.05);
+      }
+    }
+
+    /* Grid lines overlay */
+    .bg-grid-premium {
+      position: absolute;
+      inset: 0;
+      background-size: 80px 80px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Noise texture overlay */
+    .bg-noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* Responsive 9:16 video container for mobile content */
+    .video-container-9-16 {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 9 / 16;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* PC: centered with max width and side decorations */
+    @media (min-width: 768px) {
+      .video-container-9-16 {
+        max-width: 400px;
+        border-radius: 24px;
+      }
+
+      .pc-side-decoration {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 120px;
+        height: 300px;
+        background: linear-gradient(180deg,
+            rgba(139, 92, 246, 0.1) 0%,
+            rgba(59, 130, 246, 0.05) 50%,
+            transparent 100%);
+        filter: blur(60px);
+        pointer-events: none;
+      }
+
+      .pc-side-decoration.left {
+        left: 5%;
+      }
+
+      .pc-side-decoration.right {
+        right: 5%;
+      }
+    }
+
+    /* Large screens: even more space for decorations */
+    @media (min-width: 1200px) {
+      .video-container-9-16 {
+        max-width: 450px;
+      }
+
+      .pc-side-decoration {
+        width: 200px;
+        height: 400px;
+      }
+
+      .pc-side-decoration.left {
+        left: 10%;
+      }
+
+      .pc-side-decoration.right {
+        right: 10%;
+      }
+    }
+
+    /* Glowing border effect for video container */
+    .video-glow-border {
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg,
+          rgba(139, 92, 246, 0.5) 0%,
+          rgba(239, 68, 68, 0.3) 50%,
+          rgba(59, 130, 246, 0.5) 100%);
+      border-radius: inherit;
+      z-index: -1;
+      filter: blur(8px);
+      opacity: 0.6;
+      animation: glow-rotate 8s linear infinite;
+    }
+
+    @keyframes glow-rotate {
+      0% {
+        filter: blur(8px) hue-rotate(0deg);
+      }
+
+      100% {
+        filter: blur(8px) hue-rotate(360deg);
+      }
+    }
+
+    /* Premium glass panel */
+    .glass-premium {
+      background: rgba(15, 15, 30, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* Subtle scanline effect */
+    .scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px);
+      pointer-events: none;
+    }
+
+    /* Floating particles (small dots) */
+    .floating-dots {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .floating-dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: float-dot 10s ease-in-out infinite;
+    }
+
+    .floating-dot:nth-child(1) {
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-dot:nth-child(2) {
+      top: 40%;
+      left: 85%;
+      animation-delay: -2s;
+    }
+
+    .floating-dot:nth-child(3) {
+      top: 70%;
+      left: 25%;
+      animation-delay: -4s;
+    }
+
+    .floating-dot:nth-child(4) {
+      top: 30%;
+      left: 70%;
+      animation-delay: -6s;
+    }
+
+    .floating-dot:nth-child(5) {
+      top: 80%;
+      left: 60%;
+      animation-delay: -8s;
+    }
+
+    @keyframes float-dot {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+        opacity: 0.4;
+      }
+
+      25% {
+        transform: translate(10px, -15px);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: translate(-5px, 10px);
+        opacity: 0.3;
+      }
+
+      75% {
+        transform: translate(15px, 5px);
+        opacity: 0.6;
+      }
+    }
+
+    /* Stage Preview Animations */
+    @keyframes stage-bg-float {
+
+      0%,
+      100% {
+        transform: scale(1.1) translate(0, 0);
+      }
+
+      25% {
+        transform: scale(1.15) translate(-1%, -0.5%);
+      }
+
+      50% {
+        transform: scale(1.12) translate(0.5%, 0.5%);
+      }
+
+      75% {
+        transform: scale(1.08) translate(-0.5%, -0.3%);
+      }
+    }
+
+    @keyframes stage-glow-pulse {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+      }
+    }
+
+    /* ========================================
+       SERVERLESS-STYLE SUBTLE ANIMATIONS
+       ======================================== */
+
+    /* Subtle gradient flow - like flowing light */
+    .bg-gradient-flow {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(59, 130, 246, 0.03) 25%,
+        transparent 50%,
+        rgba(139, 92, 246, 0.03) 75%,
+        transparent 100%
+      );
+      background-size: 400% 400%;
+      animation: gradient-flow 30s ease infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gradient-flow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Subtle line pulse - decorative accent lines */
+    .accent-line {
+      position: absolute;
+      background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      animation: line-pulse 4s ease-in-out infinite;
+    }
+
+    .accent-line.horizontal {
+      width: 100%;
+      height: 1px;
+    }
+
+    .accent-line.vertical {
+      width: 1px;
+      height: 100%;
+    }
+
+    @keyframes line-pulse {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Subtle breathing effect for containers */
+    .breathe {
+      animation: breathe 8s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.005); opacity: 0.98; }
+    }
+
+    /* Subtle shimmer wave */
+    .shimmer-wave {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.02) 50%,
+        transparent 70%
+      );
+      background-size: 200% 100%;
+      animation: shimmer-wave 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer-wave {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Floating light spots - very subtle */
+    .light-spot {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.03;
+      animation: light-drift 25s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .light-spot-1 {
+      width: 400px;
+      height: 400px;
+      background: #3b82f6;
+      top: -10%;
+      left: -10%;
+    }
+
+    .light-spot-2 {
+      width: 300px;
+      height: 300px;
+      background: #8b5cf6;
+      bottom: -10%;
+      right: -10%;
+      animation-delay: -10s;
+    }
+
+    @keyframes light-drift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(50px, 30px) rotate(5deg); }
+      50% { transform: translate(-30px, 50px) rotate(-5deg); }
+      75% { transform: translate(20px, -20px) rotate(3deg); }
+    }
+
+    /* Pulse fade for brackets/decorations (serverless style) */
+    .pulse-fade {
+      animation: pulse-fade 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-fade {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Subtle parallax depth layers */
+    .depth-layer-1 { transform: translateZ(-10px) scale(1.1); }
+    .depth-layer-2 { transform: translateZ(-20px) scale(1.2); }
+
+    /* Speaker swap animation */
+    @keyframes swap-in {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes swap-out {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+      }
+    }
+
+    .animate-swap-in {
+      animation: swap-in 0.5s ease-out forwards;
+    }
+
+    .animate-swap-out {
+      animation: swap-out 0.3s ease-in forwards;
+    }
+
+    /* ========================================
+       EXPRESSION INSTANT SWITCH SYSTEM
+       瞬間的な表情切り替え（トランジションなし）
+       ======================================== */
+
+    /* 表情画像のスタック - 重ねて配置 */
+    .expression-stack {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .expression-layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      /* トランジションなし - 瞬間切り替え */
+    }
+
+    .expression-layer.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .expression-layer img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ========================================
+       BGM-STYLE AMBIENT BACKGROUND ANIMATIONS
+       会話のBGM的な背景アニメーション
+       ======================================== */
+
+    /* BGM背景コンテナ */
+    .bgm-ambient-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.08; /* 非常に薄い視認性 */
+    }
+
+    /* バリエーション1: 流れる波紋 */
+    .bgm-variant-ripples {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bgm-ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: bgm-ripple-expand 8s ease-out infinite;
+    }
+
+    .bgm-ripple:nth-child(1) { left: 20%; top: 30%; animation-delay: 0s; }
+    .bgm-ripple:nth-child(2) { left: 70%; top: 60%; animation-delay: -2s; }
+    .bgm-ripple:nth-child(3) { left: 50%; top: 20%; animation-delay: -4s; }
+    .bgm-ripple:nth-child(4) { left: 30%; top: 70%; animation-delay: -6s; }
+
+    @keyframes bgm-ripple-expand {
+      0% {
+        width: 0;
+        height: 0;
+        opacity: 0.5;
+        transform: translate(-50%, -50%);
+      }
+      100% {
+        width: 400px;
+        height: 400px;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    /* バリエーション2: 浮遊する光の帯 */
+    .bgm-variant-streams {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bgm-stream {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+      animation: bgm-stream-flow 12s linear infinite;
+    }
+
+    .bgm-stream:nth-child(1) { top: 25%; width: 60%; animation-delay: 0s; }
+    .bgm-stream:nth-child(2) { top: 45%; width: 80%; animation-delay: -3s; }
+    .bgm-stream:nth-child(3) { top: 65%; width: 50%; animation-delay: -6s; }
+    .bgm-stream:nth-child(4) { top: 85%; width: 70%; animation-delay: -9s; }
+
+    @keyframes bgm-stream-flow {
+      0% { transform: translateX(-100%); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateX(200%); opacity: 0; }
+    }
+
+    /* バリエーション3: 呼吸するオーラ */
+    .bgm-variant-aura {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bgm-aura {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      animation: bgm-aura-breathe 10s ease-in-out infinite;
+    }
+
+    .bgm-aura:nth-child(1) {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(100, 150, 255, 0.4) 0%, transparent 70%);
+      top: 10%; left: 20%;
+      animation-delay: 0s;
+    }
+
+    .bgm-aura:nth-child(2) {
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(200, 100, 255, 0.3) 0%, transparent 70%);
+      bottom: 20%; right: 15%;
+      animation-delay: -3s;
+    }
+
+    .bgm-aura:nth-child(3) {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255, 150, 100, 0.3) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -6s;
+    }
+
+    @keyframes bgm-aura-breathe {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    /* バリエーション4: 落ちる粒子 */
+    .bgm-variant-particles {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bgm-particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: bgm-particle-fall 15s linear infinite;
+    }
+
+    .bgm-particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .bgm-particle:nth-child(2) { left: 25%; animation-delay: -2s; }
+    .bgm-particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+    .bgm-particle:nth-child(4) { left: 55%; animation-delay: -6s; }
+    .bgm-particle:nth-child(5) { left: 70%; animation-delay: -8s; }
+    .bgm-particle:nth-child(6) { left: 85%; animation-delay: -10s; }
+    .bgm-particle:nth-child(7) { left: 15%; animation-delay: -12s; }
+    .bgm-particle:nth-child(8) { left: 60%; animation-delay: -14s; }
+
+    @keyframes bgm-particle-fall {
+      0% { top: -5%; opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { top: 105%; opacity: 0; }
+    }
+
+    /* バリエーション5: 回転するリング */
+    .bgm-variant-rings {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bgm-ring {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      animation: bgm-ring-rotate linear infinite;
+    }
+
+    .bgm-ring:nth-child(1) { width: 200px; height: 200px; animation-duration: 30s; }
+    .bgm-ring:nth-child(2) { width: 300px; height: 300px; animation-duration: 25s; animation-direction: reverse; }
+    .bgm-ring:nth-child(3) { width: 400px; height: 400px; animation-duration: 35s; }
+
+    @keyframes bgm-ring-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* バリエーション6: グラデーションウェーブ */
+    .bgm-variant-waves {
+      position: absolute;
+      inset: 0;
+    }
+
+    .bgm-wave {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: bgm-wave-move 8s ease-in-out infinite;
+    }
+
+    .bgm-wave:nth-child(1) { animation-delay: 0s; }
+    .bgm-wave:nth-child(2) { animation-delay: -2s; }
+    .bgm-wave:nth-child(3) { animation-delay: -4s; }
+
+    @keyframes bgm-wave-move {
+      0% { top: -100px; opacity: 0; }
+      20% { opacity: 0.5; }
+      80% { opacity: 0.5; }
+      100% { top: calc(100% + 100px); opacity: 0; }
+    }
+
+    /* BGMバリエーションの表示切替 */
+    .bgm-variant {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    .bgm-variant.active {
+      opacity: 1;
+    }
+
+    /* ========================================
+       DECORATIVE PATTERNS & ANIMATIONS
+       装飾的なパターンとアニメーション
+       ======================================== */
+
+    /* 幾何学模様の背景パターン */
+    .pattern-geometric {
+      position: absolute;
+      inset: 0;
+      opacity: 0.03;
+      background-image:
+        linear-gradient(30deg, transparent 48%, rgba(255,255,255,0.5) 49%, rgba(255,255,255,0.5) 51%, transparent 52%),
+        linear-gradient(-30deg, transparent 48%, rgba(255,255,255,0.5) 49%, rgba(255,255,255,0.5) 51%, transparent 52%);
+      background-size: 60px 100px;
+      pointer-events: none;
+    }
+
+    /* ヘキサゴン模様 */
+    .pattern-hexagon {
+      position: absolute;
+      inset: 0;
+      opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* 流れる光のライン */
+    .flowing-light-line {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: flow-light 6s linear infinite;
+      pointer-events: none;
+    }
+
+    .flowing-light-line:nth-child(1) { top: 20%; width: 120px; animation-delay: 0s; }
+    .flowing-light-line:nth-child(2) { top: 40%; width: 80px; animation-delay: -2s; }
+    .flowing-light-line:nth-child(3) { top: 60%; width: 100px; animation-delay: -4s; }
+
+    @keyframes flow-light {
+      0% { left: -20%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { left: 120%; opacity: 0; }
+    }
+
+    /* 星屑エフェクト */
+    .sparkle-container {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      animation: sparkle-twinkle 3s ease-in-out infinite;
+    }
+
+    .sparkle:nth-child(1) { top: 15%; left: 20%; animation-delay: 0s; }
+    .sparkle:nth-child(2) { top: 30%; left: 70%; animation-delay: -0.5s; }
+    .sparkle:nth-child(3) { top: 50%; left: 40%; animation-delay: -1s; }
+    .sparkle:nth-child(4) { top: 70%; left: 80%; animation-delay: -1.5s; }
+    .sparkle:nth-child(5) { top: 85%; left: 30%; animation-delay: -2s; }
+    .sparkle:nth-child(6) { top: 25%; left: 90%; animation-delay: -2.5s; }
+
+    @keyframes sparkle-twinkle {
+      0%, 100% { opacity: 0; transform: scale(0); }
+      50% { opacity: 0.8; transform: scale(1); }
+    }
+
+    /* 円形の波紋アニメーション */
+    .circle-pulse {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      animation: circle-expand 4s ease-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes circle-expand {
+      0% { width: 0; height: 0; opacity: 0.5; }
+      100% { width: 200px; height: 200px; opacity: 0; margin-left: -100px; margin-top: -100px; }
+    }
+
+    /* 回転する装飾リング */
+    .deco-ring {
+      position: absolute;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: deco-spin 60s linear infinite;
+      pointer-events: none;
+    }
+
+    .deco-ring:nth-child(1) { width: 300px; height: 300px; animation-duration: 50s; }
+    .deco-ring:nth-child(2) { width: 400px; height: 400px; animation-duration: 70s; animation-direction: reverse; }
+
+    @keyframes deco-spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* グロー効果付きドット */
+    .glow-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
+      animation: glow-pulse-dot 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes glow-pulse-dot {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* コーナー装飾 */
+    .corner-deco {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .corner-deco.top-left { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+    .corner-deco.top-right { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+    .corner-deco.bottom-left { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+    .corner-deco.bottom-right { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+    /* 中央の装飾円 */
+    .center-orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .center-orbit:nth-child(1) { width: 150px; height: 150px; transform: translate(-50%, -50%); }
+    .center-orbit:nth-child(2) { width: 200px; height: 200px; transform: translate(-50%, -50%); }
+    .center-orbit:nth-child(3) { width: 250px; height: 250px; transform: translate(-50%, -50%); }
+
+    /* アバターを囲むリングアニメーション */
+    .avatar-ring-glow {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: ring-rotate 3s linear infinite;
+    }
+
+    @keyframes ring-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ========================================
+       NATURE-THEMED AMBIENT ANIMATIONS
+       自然をテーマにした背景アニメーション
+       ======================================== */
+
+    /* 自然アニメーションコンテナ */
+    .nature-ambient-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.12;
+    }
+
+    .nature-variant {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    .nature-variant.active {
+      opacity: 1;
+    }
+
+    /* 水面の波紋 - Water Ripples */
+    .nature-water {
+      position: absolute;
+      inset: 0;
+    }
+
+    .water-ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(100, 180, 255, 0.4);
+      animation: water-expand 6s ease-out infinite;
+    }
+
+    .water-ripple:nth-child(1) { left: 30%; top: 40%; animation-delay: 0s; }
+    .water-ripple:nth-child(2) { left: 60%; top: 30%; animation-delay: -1.5s; }
+    .water-ripple:nth-child(3) { left: 45%; top: 60%; animation-delay: -3s; }
+    .water-ripple:nth-child(4) { left: 70%; top: 55%; animation-delay: -4.5s; }
+
+    @keyframes water-expand {
+      0% { width: 0; height: 0; opacity: 0.6; transform: translate(-50%, -50%); }
+      100% { width: 300px; height: 300px; opacity: 0; transform: translate(-50%, -50%); }
+    }
+
+    /* 水面の揺らぎ線 */
+    .water-wave-line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(100, 180, 255, 0.3), transparent);
+      animation: water-wave 4s ease-in-out infinite;
+    }
+
+    .water-wave-line:nth-child(5) { top: 30%; animation-delay: 0s; }
+    .water-wave-line:nth-child(6) { top: 50%; animation-delay: -1s; }
+    .water-wave-line:nth-child(7) { top: 70%; animation-delay: -2s; }
+
+    @keyframes water-wave {
+      0%, 100% { transform: translateX(-5%) scaleY(1); opacity: 0.3; }
+      50% { transform: translateX(5%) scaleY(1.5); opacity: 0.6; }
+    }
+
+    /* フラクタル構造 - 枝分かれパターン */
+    .nature-fractal {
+      position: absolute;
+      inset: 0;
+    }
+
+    .fractal-branch {
+      position: absolute;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(100, 200, 150, 0.5), transparent);
+      transform-origin: bottom center;
+      animation: branch-grow 8s ease-in-out infinite;
+    }
+
+    .fractal-branch:nth-child(1) { left: 20%; bottom: 0; height: 40%; animation-delay: 0s; }
+    .fractal-branch:nth-child(2) { left: 50%; bottom: 0; height: 50%; animation-delay: -2s; }
+    .fractal-branch:nth-child(3) { left: 80%; bottom: 0; height: 35%; animation-delay: -4s; }
+
+    .fractal-branch::before,
+    .fractal-branch::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(100, 200, 150, 0.4), transparent);
+    }
+
+    .fractal-branch::before { left: -10px; transform: rotate(-30deg); transform-origin: bottom center; }
+    .fractal-branch::after { right: -10px; transform: rotate(30deg); transform-origin: bottom center; }
+
+    @keyframes branch-grow {
+      0%, 100% { transform: scaleY(0.8); opacity: 0.3; }
+      50% { transform: scaleY(1); opacity: 0.7; }
+    }
+
+    /* 花びら - Petals */
+    .nature-petals {
+      position: absolute;
+      inset: 0;
+    }
+
+    .petal {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(ellipse at 30% 30%, rgba(255, 182, 193, 0.8), rgba(255, 105, 180, 0.4));
+      border-radius: 50% 0 50% 50%;
+      animation: petal-fall 12s linear infinite;
+    }
+
+    .petal:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 10s; }
+    .petal:nth-child(2) { left: 25%; animation-delay: -2s; animation-duration: 12s; }
+    .petal:nth-child(3) { left: 40%; animation-delay: -4s; animation-duration: 11s; }
+    .petal:nth-child(4) { left: 55%; animation-delay: -6s; animation-duration: 13s; }
+    .petal:nth-child(5) { left: 70%; animation-delay: -8s; animation-duration: 10s; }
+    .petal:nth-child(6) { left: 85%; animation-delay: -10s; animation-duration: 14s; }
+
+    @keyframes petal-fall {
+      0% { top: -10%; opacity: 0; transform: rotate(0deg) translateX(0); }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { top: 110%; opacity: 0; transform: rotate(360deg) translateX(50px); }
+    }
+
+    /* 葉っぱ - Leaves */
+    .nature-leaves {
+      position: absolute;
+      inset: 0;
+    }
+
+    .leaf {
+      position: absolute;
+      width: 15px;
+      height: 8px;
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.7), rgba(139, 195, 74, 0.5));
+      border-radius: 50% 0;
+      animation: leaf-drift 15s ease-in-out infinite;
+    }
+
+    .leaf:nth-child(1) { left: 5%; animation-delay: 0s; }
+    .leaf:nth-child(2) { left: 20%; animation-delay: -3s; }
+    .leaf:nth-child(3) { left: 35%; animation-delay: -6s; }
+    .leaf:nth-child(4) { left: 60%; animation-delay: -9s; }
+    .leaf:nth-child(5) { left: 80%; animation-delay: -12s; }
+
+    @keyframes leaf-drift {
+      0% { top: -5%; opacity: 0; transform: rotate(0deg) translateX(0); }
+      10% { opacity: 0.7; }
+      50% { transform: rotate(180deg) translateX(-30px); }
+      90% { opacity: 0.7; }
+      100% { top: 105%; opacity: 0; transform: rotate(360deg) translateX(20px); }
+    }
+
+    /* 雪の結晶 - Snowflakes */
+    .nature-snow {
+      position: absolute;
+      inset: 0;
+    }
+
+    .snowflake {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      animation: snow-fall 10s linear infinite;
+    }
+
+    .snowflake::before { content: '❄'; }
+
+    .snowflake:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 8s; }
+    .snowflake:nth-child(2) { left: 25%; animation-delay: -2s; animation-duration: 10s; }
+    .snowflake:nth-child(3) { left: 40%; animation-delay: -4s; animation-duration: 9s; }
+    .snowflake:nth-child(4) { left: 55%; animation-delay: -6s; animation-duration: 11s; }
+    .snowflake:nth-child(5) { left: 70%; animation-delay: -8s; animation-duration: 8s; }
+    .snowflake:nth-child(6) { left: 85%; animation-delay: -10s; animation-duration: 12s; }
+
+    @keyframes snow-fall {
+      0% { top: -5%; opacity: 0; transform: translateX(0) rotate(0deg); }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { top: 105%; opacity: 0; transform: translateX(20px) rotate(360deg); }
+    }
+
+    /* 星空/銀河 - Galaxy */
+    .nature-galaxy {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(100, 100, 200, 0.1) 0%, transparent 70%);
+    }
+
+    .star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: white;
+      border-radius: 50%;
+      animation: star-twinkle 3s ease-in-out infinite;
+    }
+
+    .star:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; }
+    .star:nth-child(2) { top: 20%; left: 45%; animation-delay: -0.5s; }
+    .star:nth-child(3) { top: 35%; left: 75%; animation-delay: -1s; }
+    .star:nth-child(4) { top: 50%; left: 25%; animation-delay: -1.5s; }
+    .star:nth-child(5) { top: 65%; left: 55%; animation-delay: -2s; }
+    .star:nth-child(6) { top: 80%; left: 85%; animation-delay: -2.5s; }
+    .star:nth-child(7) { top: 15%; left: 65%; animation-delay: -1s; }
+    .star:nth-child(8) { top: 70%; left: 35%; animation-delay: -2s; }
+
+    @keyframes star-twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+
+    /* 雲の流れ - Clouds */
+    .nature-clouds {
+      position: absolute;
+      inset: 0;
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      filter: blur(10px);
+      animation: cloud-drift 30s linear infinite;
+    }
+
+    .cloud:nth-child(1) { width: 100px; height: 40px; top: 20%; animation-delay: 0s; }
+    .cloud:nth-child(2) { width: 80px; height: 30px; top: 40%; animation-delay: -10s; }
+    .cloud:nth-child(3) { width: 120px; height: 45px; top: 60%; animation-delay: -20s; }
+
+    @keyframes cloud-drift {
+      0% { left: -20%; opacity: 0; }
+      10% { opacity: 0.5; }
+      90% { opacity: 0.5; }
+      100% { left: 120%; opacity: 0; }
+    }
+
+    /* オーロラ - Aurora */
+    .nature-aurora {
+      position: absolute;
+      inset: 0;
+    }
+
+    .aurora-wave {
+      position: absolute;
+      width: 200%;
+      height: 100px;
+      background: linear-gradient(90deg,
+        transparent,
+        rgba(0, 255, 128, 0.2),
+        rgba(0, 200, 255, 0.2),
+        rgba(128, 0, 255, 0.2),
+        transparent
+      );
+      filter: blur(20px);
+      animation: aurora-flow 10s ease-in-out infinite;
+    }
+
+    .aurora-wave:nth-child(1) { top: 20%; animation-delay: 0s; }
+    .aurora-wave:nth-child(2) { top: 40%; animation-delay: -3s; }
+    .aurora-wave:nth-child(3) { top: 60%; animation-delay: -6s; }
+
+    @keyframes aurora-flow {
+      0%, 100% { transform: translateX(-25%) scaleY(1); opacity: 0.3; }
+      50% { transform: translateX(0%) scaleY(1.5); opacity: 0.6; }
+    }
+
+    /* 炎/暖炉 - Fire */
+    .nature-fire {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .flame {
+      position: absolute;
+      bottom: 10%;
+      width: 30px;
+      height: 60px;
+      background: linear-gradient(180deg,
+        rgba(255, 200, 50, 0.8) 0%,
+        rgba(255, 100, 50, 0.6) 50%,
+        rgba(255, 50, 50, 0.3) 100%
+      );
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      filter: blur(5px);
+      animation: flame-flicker 0.5s ease-in-out infinite alternate;
+    }
+
+    .flame:nth-child(1) { left: 40%; animation-delay: 0s; }
+    .flame:nth-child(2) { left: 50%; height: 70px; animation-delay: -0.1s; }
+    .flame:nth-child(3) { left: 60%; animation-delay: -0.2s; }
+
+    @keyframes flame-flicker {
+      0% { transform: scaleY(1) scaleX(1); opacity: 0.7; }
+      100% { transform: scaleY(1.1) scaleX(0.9); opacity: 1; }
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1"
+  }
+}
+</script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{
+    "name": "MuseGacha - Intellectual Alter Ego",
+    "short_name": "MuseGacha",
+    "description": "あなたの知的分身と対話し、思考を深めるアプリ",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0f23",
+    "theme_color": "#ef4444",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230f0f23' width='100' height='100' rx='20'/><text y='.9em' font-size='65' x='15'>🎲</text></svg>",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "productivity",
+        "lifestyle"
+    ],
+    "lang": "ja",
+    "dir": "ltr"
+}

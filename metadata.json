@@ -1,0 +1,9 @@
+{
+  "name": "MuseGacha - 執筆アシスタント",
+  "description": "質問をランダムに提示し、Geminiを使って下書きを生成する個人用執筆アシスタント。",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "display-capture"
+  ]
+}
