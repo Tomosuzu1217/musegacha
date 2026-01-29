@@ -1,5 +1,6 @@
 import React from 'react';
 import { RateLimitIndicator } from './RateLimitIndicator';
+import { getCurrentUser, signOut } from '../services/authService';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,8 +26,28 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             MuseGacha
             <span className="text-[9px] bg-black text-white px-1 py-0.5 ml-1 font-mono rounded-sm">APP</span>
           </h1>
-          {/* Rate Limit Indicator */}
-          <RateLimitIndicator className="ml-auto" />
+          <div className="flex items-center gap-2 ml-auto">
+            <RateLimitIndicator />
+            {(() => {
+              const user = getCurrentUser();
+              if (!user) return null;
+              return (
+                <button
+                  onClick={() => { if (confirm('サインアウトしますか？')) signOut(); }}
+                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  title={user.displayName || 'Sign out'}
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full border border-gray-200" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
+                      {(user.displayName || 'U')[0]}
+                    </div>
+                  )}
+                </button>
+              );
+            })()}
+          </div>
         </div>
       </header>
 

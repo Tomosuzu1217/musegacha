@@ -1,5 +1,26 @@
 
 import { Question, Answer, StoredImage, PersonaConfig, CharacterProfile, SavedConversation, ChatMessage, ConsultSession, UserInterestProfile, ActivityLogEntry, CoreInsights } from '../types';
+import { firestoreService } from './firestoreService';
+
+// --- In-Memory Cache for Firestore mode ---
+interface DataCache {
+  questions: Question[];
+  answers: Answer[];
+  images: StoredImage[];
+  characters: CharacterProfile[];
+  conversations: SavedConversation[];
+  consultSessions: ConsultSession[];
+  activityLog: ActivityLogEntry[];
+  rotationHistory: string[];
+  userProfile: UserInterestProfile;
+  personaConfig: PersonaConfig;
+  coreInsights: CoreInsights | null;
+}
+
+let cache: DataCache | null = null;
+let currentUid: string | null = null;
+
+const isFirestoreMode = (): boolean => cache !== null && currentUid !== null;
 
 const KEYS = {
   QUESTIONS: 'musegacha_questions',
@@ -4106,39 +4127,94 @@ const DEFAULT_PERSONA_CONFIG: PersonaConfig = {
 };
 
 export const storageService = {
-  // --- API Key (stored in localStorage for persistence) ---
+  // --- Firestore Initialization ---
+  initializeFromFirestore: async (uid: string): Promise<void> => {
+    currentUid = uid;
 
-  getApiKeyAsync: async (): Promise<string | null> => {
-    // Use localStorage for persistent storage
-    const key = localStorage.getItem(KEYS.API_KEY);
-    if (key && isValidApiKey(key)) {
-      return key;
+    const DEFAULT_PROFILE: UserInterestProfile = {
+      themes: {},
+      recentConcerns: [],
+      totalConsultations: 0,
+      totalQuestionsGenerated: 0,
+      totalSessionsCompleted: 0,
+      lastUpdatedAt: Date.now(),
+    };
+
+    const [questions, answers, images, characters, conversations,
+      consultSessions, activityLog, rotationHistory,
+      userProfile, personaConfig, coreInsights] = await Promise.all([
+      firestoreService.loadAllQuestions(uid),
+      firestoreService.loadAllAnswers(uid),
+      firestoreService.loadAllImages(uid),
+      firestoreService.loadAllCharacters(uid),
+      firestoreService.loadAllConversations(uid),
+      firestoreService.loadAllConsultSessions(uid),
+      firestoreService.loadAllActivityLog(uid),
+      firestoreService.getRotationHistory(uid),
+      firestoreService.getProfile(uid),
+      firestoreService.getPersonaConfig(uid),
+      firestoreService.getCoreInsights(uid),
+    ]);
+
+    // Merge with seed characters
+    const defaultIds = new Set(SEED_CHARACTERS.map(c => c.id));
+    const userChars = characters.filter(c => !defaultIds.has(c.id));
+    const mergedCharacters = [...SEED_CHARACTERS, ...userChars];
+
+    // Seed questions if empty
+    const finalQuestions = questions.length > 0 ? questions : SEED_QUESTIONS;
+
+    cache = {
+      questions: finalQuestions,
+      answers,
+      images,
+      characters: mergedCharacters,
+      conversations: conversations.sort((a, b) => b.createdAt - a.createdAt),
+      consultSessions: consultSessions.sort((a, b) => b.updatedAt - a.updatedAt),
+      activityLog,
+      rotationHistory,
+      userProfile: userProfile || DEFAULT_PROFILE,
+      personaConfig: personaConfig || DEFAULT_PERSONA_CONFIG,
+      coreInsights,
+    };
+
+    // Seed data to Firestore if new user
+    if (questions.length === 0) {
+      firestoreService.batchSetQuestions(uid, SEED_QUESTIONS).catch(console.error);
     }
+    if (characters.length === 0) {
+      firestoreService.batchSetCharacters(uid, SEED_CHARACTERS).catch(console.error);
+    }
+  },
+
+  resetCache: (): void => {
+    cache = null;
+    currentUid = null;
+  },
+
+  // --- API Key (always localStorage - never in Firestore) ---
+  getApiKeyAsync: async (): Promise<string | null> => {
+    const key = localStorage.getItem(KEYS.API_KEY);
+    if (key && isValidApiKey(key)) return key;
     return null;
   },
 
-
-  // Async set - stores in localStorage (persistent)
   setApiKeyAsync: async (key: string): Promise<boolean> => {
     if (!key || typeof key !== 'string') return false;
     if (!isValidApiKey(key)) return false;
-
     localStorage.setItem(KEYS.API_KEY, key);
     return true;
   },
 
-  // Sync version - uses localStorage (persistent)
   getApiKey: (): string | null => {
     const key = localStorage.getItem(KEYS.API_KEY);
     if (key && isValidApiKey(key)) return key;
     return null;
   },
 
-  // Sync set - uses localStorage (persistent)
   setApiKey: (key: string): void => {
     if (!key || typeof key !== 'string') return;
     if (!isValidApiKey(key)) return;
-
     localStorage.setItem(KEYS.API_KEY, key);
   },
 
@@ -4146,8 +4222,9 @@ export const storageService = {
     localStorage.removeItem(KEYS.API_KEY);
   },
 
-  // --- Questions (with validation & sanitization) ---
+  // --- Questions ---
   getQuestions: (): Question[] => {
+    if (isFirestoreMode()) return cache!.questions;
     const data = localStorage.getItem(KEYS.QUESTIONS);
     if (!data) {
       if (checkStorageQuota()) {
@@ -4161,7 +4238,6 @@ export const storageService = {
 
   addQuestion: (question: Question): void => {
     if (!question || !isValidId(question.id)) return;
-    if (!checkStorageQuota()) return;
 
     const sanitizedQuestion: Question = {
       ...question,
@@ -4173,17 +4249,24 @@ export const storageService = {
         .filter(t => t.length > 0),
       difficulty: isValidDifficulty(question.difficulty) ? question.difficulty : 'normal'
     };
-    const questions = storageService.getQuestions();
-    if (questions.length >= SECURITY_CONFIG.MAX_QUESTIONS_COUNT) {
-      questions.pop();
+
+    if (isFirestoreMode()) {
+      cache!.questions.unshift(sanitizedQuestion);
+      if (cache!.questions.length > SECURITY_CONFIG.MAX_QUESTIONS_COUNT) {
+        cache!.questions = cache!.questions.slice(0, SECURITY_CONFIG.MAX_QUESTIONS_COUNT);
+      }
+      firestoreService.setQuestion(currentUid!, sanitizedQuestion).catch(console.error);
+      return;
     }
+    if (!checkStorageQuota()) return;
+    const questions = storageService.getQuestions();
+    if (questions.length >= SECURITY_CONFIG.MAX_QUESTIONS_COUNT) questions.pop();
     questions.unshift(sanitizedQuestion);
     localStorage.setItem(KEYS.QUESTIONS, JSON.stringify(questions));
   },
 
   addQuestionsBatch: (newQuestions: Question[]): void => {
     if (!Array.isArray(newQuestions)) return;
-    if (!checkStorageQuota()) return;
 
     const sanitized = newQuestions
       .filter(q => q && isValidId(q.id))
@@ -4198,6 +4281,13 @@ export const storageService = {
           .filter(t => t.length > 0),
         difficulty: isValidDifficulty(q.difficulty) ? q.difficulty : 'normal'
       }));
+
+    if (isFirestoreMode()) {
+      cache!.questions = [...sanitized, ...cache!.questions].slice(0, SECURITY_CONFIG.MAX_QUESTIONS_COUNT);
+      firestoreService.batchSetQuestions(currentUid!, sanitized).catch(console.error);
+      return;
+    }
+    if (!checkStorageQuota()) return;
     const questions = storageService.getQuestions();
     const updated = [...sanitized, ...questions].slice(0, SECURITY_CONFIG.MAX_QUESTIONS_COUNT);
     localStorage.setItem(KEYS.QUESTIONS, JSON.stringify(updated));
@@ -4205,24 +4295,39 @@ export const storageService = {
 
   deleteQuestion: (id: string): void => {
     if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      cache!.questions = cache!.questions.filter(q => q.id !== id);
+      firestoreService.deleteQuestion(currentUid!, id).catch(console.error);
+      return;
+    }
     const questions = storageService.getQuestions().filter((q) => q.id !== id);
     localStorage.setItem(KEYS.QUESTIONS, JSON.stringify(questions));
   },
 
   markAsUsed: (id: string): void => {
     if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      const q = cache!.questions.find(q => q.id === id);
+      if (q) {
+        q.lastUsedAt = Date.now();
+        firestoreService.setQuestion(currentUid!, q).catch(console.error);
+      }
+      cache!.rotationHistory = [id, ...cache!.rotationHistory.filter(hId => hId !== id)].slice(0, 30);
+      firestoreService.setRotationHistory(currentUid!, cache!.rotationHistory).catch(console.error);
+      return;
+    }
     const questions = storageService.getQuestions().map((q) =>
       q.id === id ? { ...q, lastUsedAt: Date.now() } : q
     );
     localStorage.setItem(KEYS.QUESTIONS, JSON.stringify(questions));
-
     const history = storageService.getRotationHistory();
     const newHistory = [id, ...history.filter(hId => hId !== id)].slice(0, 30);
     localStorage.setItem(KEYS.HISTORY, JSON.stringify(newHistory));
   },
 
-  // --- Answers (with validation) ---
+  // --- Answers ---
   getAnswers: (): Answer[] => {
+    if (isFirestoreMode()) return cache!.answers;
     const data = localStorage.getItem(KEYS.ANSWERS);
     const parsed = safeJsonParse<Answer[]>(data, []);
     return parsed.filter(a => a && isValidId(a.id));
@@ -4230,7 +4335,6 @@ export const storageService = {
 
   saveAnswer: (answer: Answer): void => {
     if (!answer || !isValidId(answer.id)) return;
-    if (!checkStorageQuota()) return;
 
     const sanitizedAnswer: Answer = {
       ...answer,
@@ -4238,39 +4342,39 @@ export const storageService = {
       draft: (answer.draft || '').slice(0, SECURITY_CONFIG.MAX_ANSWER_LENGTH),
       final: (answer.final || '').slice(0, SECURITY_CONFIG.MAX_ANSWER_LENGTH)
     };
-    const answers = storageService.getAnswers();
-    if (answers.length >= SECURITY_CONFIG.MAX_ANSWERS_COUNT) {
-      answers.pop();
+
+    if (isFirestoreMode()) {
+      if (cache!.answers.length >= SECURITY_CONFIG.MAX_ANSWERS_COUNT) cache!.answers.pop();
+      cache!.answers.unshift(sanitizedAnswer);
+      firestoreService.setAnswer(currentUid!, sanitizedAnswer).catch(console.error);
+      return;
     }
+    if (!checkStorageQuota()) return;
+    const answers = storageService.getAnswers();
+    if (answers.length >= SECURITY_CONFIG.MAX_ANSWERS_COUNT) answers.pop();
     answers.unshift(sanitizedAnswer);
     localStorage.setItem(KEYS.ANSWERS, JSON.stringify(answers));
   },
 
-  // --- Images (with validation & security) ---
+  // --- Images ---
   getImages: (): StoredImage[] => {
+    if (isFirestoreMode()) return cache!.images;
     const data = localStorage.getItem(KEYS.IMAGES);
     const images = safeJsonParse<StoredImage[]>(data, []);
-    // Filter out any invalid data URLs and validate IDs
     return images.filter(img => img && isValidId(img.id) && isValidDataUrl(img.dataUrl));
   },
 
   saveImage: (dataUrl: string): StoredImage | null => {
-    // Validate data URL format
     if (!isValidDataUrl(dataUrl)) {
       console.warn('Invalid image format rejected');
       return null;
     }
-    if (!checkStorageQuota()) return null;
 
     const images = storageService.getImages();
-
-    // Check count limit
     if (images.length >= SECURITY_CONFIG.MAX_IMAGES_COUNT) {
       console.warn('Image storage limit reached');
       return null;
     }
-
-    // Check for duplicate
     const existing = images.find(img => img.dataUrl === dataUrl);
     if (existing) return existing;
 
@@ -4280,6 +4384,12 @@ export const storageService = {
       createdAt: Date.now()
     };
 
+    if (isFirestoreMode()) {
+      cache!.images = [newImage, ...cache!.images].slice(0, SECURITY_CONFIG.MAX_IMAGES_COUNT);
+      firestoreService.setImage(currentUid!, newImage).catch(console.error);
+      return newImage;
+    }
+    if (!checkStorageQuota()) return null;
     const updated = [newImage, ...images].slice(0, SECURITY_CONFIG.MAX_IMAGES_COUNT);
     localStorage.setItem(KEYS.IMAGES, JSON.stringify(updated));
     return newImage;
@@ -4287,62 +4397,52 @@ export const storageService = {
 
   deleteImage: (id: string): void => {
     if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      cache!.images = cache!.images.filter(img => img.id !== id);
+      firestoreService.deleteImage(currentUid!, id).catch(console.error);
+      return;
+    }
     const images = storageService.getImages().filter(img => img.id !== id);
     localStorage.setItem(KEYS.IMAGES, JSON.stringify(images));
   },
 
-  // --- Characters (with validation & security) ---
+  // --- Characters ---
   getCharacterProfiles: (): CharacterProfile[] => {
+    if (isFirestoreMode()) return cache!.characters;
     const data = localStorage.getItem(KEYS.CHARACTERS);
-
-    // Always start with SEED_CHARACTERS as the base (default characters)
     const defaultCharacters = SEED_CHARACTERS;
-
     if (!data) {
-      // No stored data, save and return seed characters
       if (checkStorageQuota()) {
         localStorage.setItem(KEYS.CHARACTERS, JSON.stringify(defaultCharacters));
       }
       return defaultCharacters;
     }
-
     const storedCharacters = safeJsonParse<CharacterProfile[]>(data, []);
-
-    // Merge: Use SEED_CHARACTERS for defaults (always updated), keep user-created characters
     const defaultIds = new Set(defaultCharacters.map(c => c.id));
     const userCreatedCharacters = storedCharacters.filter(
       p => p && isValidId(p.id) && !defaultIds.has(p.id)
     );
-
-    // Combine: defaults first, then user-created
     const merged = [...defaultCharacters, ...userCreatedCharacters];
-
-    // Update localStorage with merged data
     if (checkStorageQuota()) {
       localStorage.setItem(KEYS.CHARACTERS, JSON.stringify(merged));
     }
-
     return merged;
   },
 
   getCharacterProfile: (id: string): CharacterProfile | undefined => {
     if (!isValidId(id)) return undefined;
-    const profiles = storageService.getCharacterProfiles();
-    return profiles.find(p => p.id === id);
+    return storageService.getCharacterProfiles().find(p => p.id === id);
   },
 
   saveCharacterProfile: (profile: CharacterProfile): boolean => {
-    // Validate ID
     if (!profile || !isValidId(profile.id)) {
       console.warn('Invalid character profile ID');
       return false;
     }
-    if (!checkStorageQuota()) return false;
 
-    // Sanitize and validate
     const sanitizedProfile: CharacterProfile = {
       ...profile,
-      id: profile.id, // Keep original ID
+      id: profile.id,
       name: sanitizeString(profile.name, SECURITY_CONFIG.MAX_NAME_LENGTH),
       persona: sanitizeString(profile.persona, SECURITY_CONFIG.MAX_PERSONA_LENGTH),
       voiceName: sanitizeString(profile.voiceName, SECURITY_CONFIG.MAX_NAME_LENGTH),
@@ -4351,20 +4451,26 @@ export const storageService = {
       isDefault: profile.isDefault === true
     };
 
+    if (isFirestoreMode()) {
+      const index = cache!.characters.findIndex(p => p.id === profile.id);
+      if (index >= 0) {
+        cache!.characters[index] = sanitizedProfile;
+      } else {
+        if (cache!.characters.length >= SECURITY_CONFIG.MAX_CHARACTERS_COUNT) return false;
+        cache!.characters.push(sanitizedProfile);
+      }
+      firestoreService.setCharacter(currentUid!, sanitizedProfile).catch(console.error);
+      return true;
+    }
+    if (!checkStorageQuota()) return false;
     const profiles = storageService.getCharacterProfiles();
     const index = profiles.findIndex(p => p.id === profile.id);
-
     let updated;
     if (index >= 0) {
-      // Update existing
       updated = [...profiles];
       updated[index] = sanitizedProfile;
     } else {
-      // Check count limit for new profiles
-      if (profiles.length >= SECURITY_CONFIG.MAX_CHARACTERS_COUNT) {
-        console.warn('Character storage limit reached');
-        return false;
-      }
+      if (profiles.length >= SECURITY_CONFIG.MAX_CHARACTERS_COUNT) return false;
       updated = [...profiles, sanitizedProfile];
     }
     localStorage.setItem(KEYS.CHARACTERS, JSON.stringify(updated));
@@ -4373,21 +4479,25 @@ export const storageService = {
 
   deleteCharacterProfile: (id: string): void => {
     if (!isValidId(id)) return;
-    // Prevent deletion of default characters
     const profile = storageService.getCharacterProfile(id);
     if (profile?.isDefault) {
       console.warn('Cannot delete default character');
+      return;
+    }
+    if (isFirestoreMode()) {
+      cache!.characters = cache!.characters.filter(p => p.id !== id);
+      firestoreService.deleteCharacter(currentUid!, id).catch(console.error);
       return;
     }
     const profiles = storageService.getCharacterProfiles().filter(p => p.id !== id);
     localStorage.setItem(KEYS.CHARACTERS, JSON.stringify(profiles));
   },
 
-  // --- Persona Config (with validation) ---
+  // --- Persona Config ---
   getPersonaConfig: (): PersonaConfig => {
+    if (isFirestoreMode()) return cache!.personaConfig;
     const data = localStorage.getItem(KEYS.PERSONA_CONFIG);
     const parsed = safeJsonParse<PersonaConfig>(data, DEFAULT_PERSONA_CONFIG);
-    // Validate IDs
     if (!isValidId(parsed.moderatorId) || !isValidId(parsed.commentatorId)) {
       return DEFAULT_PERSONA_CONFIG;
     }
@@ -4395,29 +4505,32 @@ export const storageService = {
   },
 
   savePersonaConfig: (config: PersonaConfig): boolean => {
-    // Validate IDs
     if (!config || !isValidId(config.moderatorId) || !isValidId(config.commentatorId)) {
       console.warn('Invalid persona config');
       return false;
     }
+    const cleaned = { moderatorId: config.moderatorId, commentatorId: config.commentatorId };
+    if (isFirestoreMode()) {
+      cache!.personaConfig = cleaned;
+      firestoreService.setPersonaConfig(currentUid!, cleaned).catch(console.error);
+      return true;
+    }
     if (!checkStorageQuota()) return false;
-    localStorage.setItem(KEYS.PERSONA_CONFIG, JSON.stringify({
-      moderatorId: config.moderatorId,
-      commentatorId: config.commentatorId
-    }));
+    localStorage.setItem(KEYS.PERSONA_CONFIG, JSON.stringify(cleaned));
     return true;
   },
 
-  // --- Logic Helpers (with validation) ---
+  // --- Rotation History ---
   getRotationHistory: (): string[] => {
+    if (isFirestoreMode()) return cache!.rotationHistory;
     const data = localStorage.getItem(KEYS.HISTORY);
     const parsed = safeJsonParse<string[]>(data, []);
-    // Filter out invalid IDs
     return parsed.filter(id => isValidId(id)).slice(0, 50);
   },
 
-  // --- Conversations (会話履歴保存・再生) ---
+  // --- Conversations ---
   getConversations: (): SavedConversation[] => {
+    if (isFirestoreMode()) return cache!.conversations;
     const data = localStorage.getItem(KEYS.CONVERSATIONS);
     const parsed = safeJsonParse<SavedConversation[]>(data, []);
     return parsed.filter(c => c && isValidId(c.id)).sort((a, b) => b.createdAt - a.createdAt);
@@ -4428,7 +4541,6 @@ export const storageService = {
       console.warn('Invalid conversation');
       return false;
     }
-    if (!checkStorageQuota()) return false;
 
     const sanitizedConversation: SavedConversation = {
       id: conversation.id,
@@ -4445,21 +4557,29 @@ export const storageService = {
       createdAt: conversation.createdAt
     };
 
+    if (isFirestoreMode()) {
+      const index = cache!.conversations.findIndex(c => c.id === conversation.id);
+      if (index >= 0) {
+        cache!.conversations[index] = sanitizedConversation;
+      } else {
+        cache!.conversations = [sanitizedConversation, ...cache!.conversations].slice(0, SECURITY_CONFIG.MAX_CONVERSATIONS_COUNT);
+      }
+      firestoreService.setConversation(currentUid!, sanitizedConversation).catch(console.error);
+      return true;
+    }
+    if (!checkStorageQuota()) return false;
     const conversations = storageService.getConversations();
     const existing = conversations.findIndex(c => c.id === conversation.id);
-
     let updated: SavedConversation[];
     if (existing >= 0) {
       updated = conversations.map(c => c.id === conversation.id ? sanitizedConversation : c);
     } else {
-      // 最大件数を超えたら古いものを削除
       if (conversations.length >= SECURITY_CONFIG.MAX_CONVERSATIONS_COUNT) {
         updated = [sanitizedConversation, ...conversations.slice(0, SECURITY_CONFIG.MAX_CONVERSATIONS_COUNT - 1)];
       } else {
         updated = [sanitizedConversation, ...conversations];
       }
     }
-
     localStorage.setItem(KEYS.CONVERSATIONS, JSON.stringify(updated));
     return true;
   },
@@ -4471,12 +4591,18 @@ export const storageService = {
 
   deleteConversation: (id: string): void => {
     if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      cache!.conversations = cache!.conversations.filter(c => c.id !== id);
+      firestoreService.deleteConversation(currentUid!, id).catch(console.error);
+      return;
+    }
     const conversations = storageService.getConversations().filter(c => c.id !== id);
     localStorage.setItem(KEYS.CONVERSATIONS, JSON.stringify(conversations));
   },
 
   // --- Consultation Sessions ---
   getConsultSessions: (): ConsultSession[] => {
+    if (isFirestoreMode()) return cache!.consultSessions;
     const data = localStorage.getItem(KEYS.CONSULT_SESSIONS);
     const parsed = safeJsonParse<ConsultSession[]>(data, []);
     return parsed.filter(s => s && isValidId(s.id)).sort((a, b) => b.updatedAt - a.updatedAt);
@@ -4484,7 +4610,6 @@ export const storageService = {
 
   saveConsultSession: (session: ConsultSession): void => {
     if (!session || !isValidId(session.id)) return;
-    if (!checkStorageQuota()) return;
 
     const sanitized: ConsultSession = {
       ...session,
@@ -4496,6 +4621,17 @@ export const storageService = {
       summary: session.summary ? sanitizeString(session.summary, 500) : undefined,
     };
 
+    if (isFirestoreMode()) {
+      const index = cache!.consultSessions.findIndex(s => s.id === session.id);
+      if (index >= 0) {
+        cache!.consultSessions[index] = sanitized;
+      } else {
+        cache!.consultSessions = [sanitized, ...cache!.consultSessions].slice(0, SECURITY_CONFIG.MAX_CONSULT_SESSIONS);
+      }
+      firestoreService.setConsultSession(currentUid!, sanitized).catch(console.error);
+      return;
+    }
+    if (!checkStorageQuota()) return;
     const sessions = storageService.getConsultSessions();
     const index = sessions.findIndex(s => s.id === session.id);
     let updated: ConsultSession[];
@@ -4515,12 +4651,18 @@ export const storageService = {
 
   deleteConsultSession: (id: string): void => {
     if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      cache!.consultSessions = cache!.consultSessions.filter(s => s.id !== id);
+      firestoreService.deleteConsultSession(currentUid!, id).catch(console.error);
+      return;
+    }
     const sessions = storageService.getConsultSessions().filter(s => s.id !== id);
     localStorage.setItem(KEYS.CONSULT_SESSIONS, JSON.stringify(sessions));
   },
 
   // --- User Interest Profile ---
   getUserProfile: (): UserInterestProfile => {
+    if (isFirestoreMode()) return cache!.userProfile;
     const data = localStorage.getItem(KEYS.USER_PROFILE);
     return safeJsonParse<UserInterestProfile>(data, {
       themes: {},
@@ -4533,6 +4675,11 @@ export const storageService = {
   },
 
   updateUserProfile: (updates: Partial<UserInterestProfile>): void => {
+    if (isFirestoreMode()) {
+      cache!.userProfile = { ...cache!.userProfile, ...updates, lastUpdatedAt: Date.now() };
+      firestoreService.setProfile(currentUid!, cache!.userProfile).catch(console.error);
+      return;
+    }
     if (!checkStorageQuota()) return;
     const profile = storageService.getUserProfile();
     const updated = { ...profile, ...updates, lastUpdatedAt: Date.now() };
@@ -4541,9 +4688,15 @@ export const storageService = {
 
   incrementTheme: (theme: string): void => {
     if (!theme) return;
+    const safeTheme = sanitizeString(theme, SECURITY_CONFIG.MAX_TAG_LENGTH);
+    if (isFirestoreMode()) {
+      cache!.userProfile.themes[safeTheme] = (cache!.userProfile.themes[safeTheme] || 0) + 1;
+      cache!.userProfile.lastUpdatedAt = Date.now();
+      firestoreService.setProfile(currentUid!, cache!.userProfile).catch(console.error);
+      return;
+    }
     if (!checkStorageQuota()) return;
     const profile = storageService.getUserProfile();
-    const safeTheme = sanitizeString(theme, SECURITY_CONFIG.MAX_TAG_LENGTH);
     profile.themes[safeTheme] = (profile.themes[safeTheme] || 0) + 1;
     profile.lastUpdatedAt = Date.now();
     localStorage.setItem(KEYS.USER_PROFILE, JSON.stringify(profile));
@@ -4551,31 +4704,44 @@ export const storageService = {
 
   // --- Activity Log ---
   getActivityLog: (): ActivityLogEntry[] => {
+    if (isFirestoreMode()) return cache!.activityLog;
     const data = localStorage.getItem(KEYS.ACTIVITY_LOG);
     return safeJsonParse<ActivityLogEntry[]>(data, []);
   },
 
   addActivityLog: (entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>): void => {
-    if (!checkStorageQuota()) return;
-    const log = storageService.getActivityLog();
     const newEntry: ActivityLogEntry = {
       ...entry,
       detail: sanitizeString(entry.detail || '', 500),
       id: crypto.randomUUID(),
       timestamp: Date.now(),
     };
+
+    if (isFirestoreMode()) {
+      cache!.activityLog = [newEntry, ...cache!.activityLog].slice(0, SECURITY_CONFIG.MAX_ACTIVITY_LOG_ENTRIES);
+      firestoreService.addActivityLogEntry(currentUid!, newEntry).catch(console.error);
+      return;
+    }
+    if (!checkStorageQuota()) return;
+    const log = storageService.getActivityLog();
     const updated = [newEntry, ...log].slice(0, SECURITY_CONFIG.MAX_ACTIVITY_LOG_ENTRIES);
     localStorage.setItem(KEYS.ACTIVITY_LOG, JSON.stringify(updated));
   },
 
   // --- Core Insights ---
   getCoreInsights: (): CoreInsights | null => {
+    if (isFirestoreMode()) return cache!.coreInsights;
     const data = localStorage.getItem(KEYS.CORE_INSIGHTS);
     if (!data) return null;
     return safeJsonParse<CoreInsights | null>(data, null);
   },
 
   saveCoreInsights: (insights: CoreInsights): void => {
+    if (isFirestoreMode()) {
+      cache!.coreInsights = insights;
+      firestoreService.setCoreInsights(currentUid!, insights).catch(console.error);
+      return;
+    }
     if (!checkStorageQuota()) return;
     localStorage.setItem(KEYS.CORE_INSIGHTS, JSON.stringify(insights));
   },
@@ -4584,6 +4750,7 @@ export const storageService = {
   clearAll: (): boolean => {
     try {
       localStorage.clear();
+      cache = null;
       return true;
     } catch {
       console.error('Failed to clear storage');
