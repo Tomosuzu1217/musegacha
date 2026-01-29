@@ -109,9 +109,7 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
                 cancelAudioPlayback();
             }
           },
-          onclose: () => {
-            console.log('Session closed');
-          },
+          onclose: () => {},
           onerror: (err) => {
             console.error('Session error', err);
             setStatus('error');

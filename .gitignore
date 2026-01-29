@@ -36,9 +36,5 @@ dist-ssr
 credentials.json
 secrets.json
 
-# Reference app (not part of this project)
-新しいフォルダー (4) - コピー/
-templary/
-
 # Claude Code local settings
 .claude/

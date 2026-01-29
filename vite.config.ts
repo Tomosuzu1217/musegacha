@@ -5,11 +5,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
-  // APIキーの存在確認のみ（値は露出させない）
-  console.log('[Vite Config] GEMINI_API_KEY:', env.GEMINI_API_KEY ? 'SET' : 'NOT SET');
-  console.log('[Vite Config] GEMINI_API_KEY_2:', env.GEMINI_API_KEY_2 ? 'SET' : 'NOT SET');
-  console.log('[Vite Config] GEMINI_API_KEY_3:', env.GEMINI_API_KEY_3 ? 'SET' : 'NOT SET');
-
   return {
     base: './',
     server: {
