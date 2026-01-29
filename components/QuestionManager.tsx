@@ -262,6 +262,7 @@ export const QuestionManager: React.FC = () => {
               <textarea
                 required
                 rows={3}
+                maxLength={500}
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
                 className="w-full bg-white border border-gray-200 p-3 outline-none focus:border-black rounded-sm text-black"
@@ -509,8 +510,9 @@ export const QuestionManager: React.FC = () => {
                                {/* Persona */}
                                <div>
                                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-2">性格・振る舞い (プロンプト)</label>
-                                   <textarea 
+                                   <textarea
                                      rows={4}
+                                     maxLength={1000}
                                      value={editingChar.persona}
                                      onChange={e => setEditingChar({...editingChar, persona: e.target.value})}
                                      className="w-full border border-gray-300 p-3 rounded-md bg-white text-black text-sm leading-relaxed"

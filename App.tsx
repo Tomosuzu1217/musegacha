@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [noQuestionsAvailable, setNoQuestionsAvailable] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   // API Key State
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
@@ -79,6 +80,8 @@ const App: React.FC = () => {
   };
 
   const spinGacha = () => {
+    if (isSpinning) return;
+    setIsSpinning(true);
     setNoQuestionsAvailable(false);
     setIsEditing(false);
 
@@ -94,6 +97,7 @@ const App: React.FC = () => {
     if (candidates.length === 0) {
       setNoQuestionsAvailable(true);
       setCurrentQuestion(null);
+      setIsSpinning(false);
       return;
     }
 
@@ -113,6 +117,7 @@ const App: React.FC = () => {
       if (roll <= 0) { random = q; break; }
     }
     setCurrentQuestion(random);
+    setTimeout(() => setIsSpinning(false), 300);
 
     // Log the spin
     storageService.addActivityLog({
@@ -147,7 +152,7 @@ const App: React.FC = () => {
           <div className="fixed top-16 right-4 z-50">
             <button
               onClick={() => setIsApiKeyModalOpen(true)}
-              className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg"
+              className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg text-lg font-bold"
             >
               !
             </button>
@@ -230,7 +235,8 @@ const App: React.FC = () => {
                         </button>
                         <button
                           onClick={spinGacha}
-                          className="w-full py-3 bg-white text-gray-500 border border-gray-200 font-mono text-xs uppercase tracking-widest hover:bg-gray-50 active:scale-[0.98] transition-all rounded-lg"
+                          disabled={isSpinning}
+                          className="w-full py-3 bg-white text-gray-500 border border-gray-200 font-mono text-xs uppercase tracking-widest hover:bg-gray-50 active:scale-[0.98] transition-all rounded-lg disabled:opacity-50"
                         >
                           Skip / Next
                         </button>
@@ -258,7 +264,8 @@ const App: React.FC = () => {
                           </p>
                           <button
                             onClick={spinGacha}
-                            className="w-full max-w-xs py-5 bg-black text-white text-lg font-bold font-display uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all"
+                            disabled={isSpinning}
+                            className="w-full max-w-xs py-5 bg-black text-white text-lg font-bold font-display uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all disabled:opacity-50"
                           >
                             SPIN
                           </button>

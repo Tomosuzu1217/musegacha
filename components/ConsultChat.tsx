@@ -12,9 +12,11 @@ export const ConsultChat: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedCount, setGeneratedCount] = useState(0);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserInterestProfile | null>(null);
   const [coreInsights, setCoreInsights] = useState<CoreInsights | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -124,6 +126,7 @@ export const ConsultChat: React.FC = () => {
   const handleAnalyzeCore = async () => {
     if (!profile || sessions.length < 2) return;
     setIsAnalyzing(true);
+    setAnalysisError(null);
     try {
       const sessionData = sessions.slice(0, 8).map(s => ({
         themes: s.themes,
@@ -134,6 +137,7 @@ export const ConsultChat: React.FC = () => {
       setCoreInsights(insights);
     } catch (e) {
       console.error('Core analysis failed', e);
+      setAnalysisError('分析に失敗しました。もう一度お試しください。');
     } finally {
       setIsAnalyzing(false);
     }
@@ -227,6 +231,7 @@ export const ConsultChat: React.FC = () => {
     if (activeSession.generatedQuestionIds.length > 0) return;
 
     setIsGeneratingQuestions(true);
+    setGenerateError(null);
     try {
       const updated = await generateAndSaveQuestions(activeSession);
       setActiveSession(updated);
@@ -234,6 +239,7 @@ export const ConsultChat: React.FC = () => {
       refreshProfile();
     } catch (error) {
       console.error('Manual question generation error:', error);
+      setGenerateError('質問の生成に失敗しました。');
     } finally {
       setIsGeneratingQuestions(false);
     }
@@ -341,6 +347,10 @@ export const ConsultChat: React.FC = () => {
                 {isAnalyzing ? '分析中...' : coreInsights ? '再分析' : '自分のコアを発見'}
               </button>
             </div>
+
+            {analysisError && (
+              <p className="text-red-600 text-xs mb-3">{analysisError}</p>
+            )}
 
             {coreInsights ? (
               <div className="space-y-4">
@@ -454,7 +464,7 @@ export const ConsultChat: React.FC = () => {
       <div className="flex items-center gap-3 pb-4 border-b border-gray-100 mb-4 flex-shrink-0">
         <button
           onClick={handleBack}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-3 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -488,6 +498,12 @@ export const ConsultChat: React.FC = () => {
           </span>
         )}
       </div>
+
+      {generateError && (
+        <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg mb-2">
+          <p className="text-red-600 text-xs">{generateError}</p>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 pb-4">

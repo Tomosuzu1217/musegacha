@@ -290,8 +290,11 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
+  const [isSavingImage, setIsSavingImage] = useState(false);
+
   const handleQED = async () => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || isSavingImage) return;
+    setIsSavingImage(true);
     try {
       const canvas = await html2canvas(cardRef.current, {
         scale: 2, // High resolution
@@ -307,6 +310,8 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
     } catch (e) {
       console.error("Image capture failed", e);
       alert("画像の保存に失敗しました。");
+    } finally {
+      setIsSavingImage(false);
     }
   };
 
@@ -750,9 +755,10 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
 
                     <button
                       onClick={handleQED}
-                      className="w-full max-w-sm py-5 bg-black text-white font-display font-bold text-2xl uppercase tracking-widest shadow-xl rounded-lg active:scale-[0.98] transition-all hover:bg-gray-900"
+                      disabled={isSavingImage}
+                      className="w-full max-w-sm py-5 bg-black text-white font-display font-bold text-2xl uppercase tracking-widest shadow-xl rounded-lg active:scale-[0.98] transition-all hover:bg-gray-900 disabled:opacity-50"
                     >
-                      Save Image
+                      {isSavingImage ? 'Saving...' : 'Save Image'}
                     </button>
                   </>
                 )}
@@ -775,9 +781,10 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                         <p className="text-red-600 text-sm mb-4">{noteGenerationError}</p>
                         <button
                           onClick={() => { setNoteArticleData(null); handleGenerateNoteArticle(); }}
-                          className="px-6 py-2 bg-black text-white text-sm font-bold rounded-lg hover:bg-gray-900 transition-colors"
+                          disabled={isGeneratingNote}
+                          className="px-6 py-2 bg-black text-white text-sm font-bold rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
                         >
-                          再試行
+                          {isGeneratingNote ? '生成中...' : '再試行'}
                         </button>
                       </div>
                     ) : noteArticleData ? (
