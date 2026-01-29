@@ -8,6 +8,7 @@ import { HistoryViewer } from './components/HistoryViewer';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { ConsultChat } from './components/ConsultChat';
 import { storageService } from './services/storageService';
+import { apiKeyRotation } from './services/apiKeyRotation';
 import { Question, FilterState, PRESET_TAGS } from './types';
 
 // @ts-ignore - Defined in vite.config.ts
@@ -53,7 +54,14 @@ const App: React.FC = () => {
       }
     }
 
-    // 3. LocalStorageにAPIキーがある場合
+    // 3. APIキーローテーションサービスにキーがある場合
+    if (apiKeyRotation.hasValidKey()) {
+      setHasApiKey(true);
+      setIsApiKeyModalOpen(false);
+      return;
+    }
+
+    // 4. LocalStorageにAPIキーがある場合（後方互換）
     const key = storageService.getApiKey();
     if (key) {
       setHasApiKey(true);
