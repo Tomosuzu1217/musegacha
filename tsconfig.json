@@ -25,5 +25,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "新しいフォルダー (4) - コピー",
+    "node_modules",
+    "dist"
+  ]
 }

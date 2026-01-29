@@ -4,12 +4,13 @@ import { RateLimitIndicator } from './RateLimitIndicator';
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
-  onTabChange: (tab: 'gacha' | 'manage' | 'history') => void;
+  onTabChange: (tab: 'gacha' | 'consult' | 'manage' | 'history') => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
   const tabs = [
     { id: 'gacha', label: 'GACHA', icon: '🎲' },
+    { id: 'consult', label: 'CONSULT', icon: '💬' },
     { id: 'manage', label: 'MANAGE', icon: '⚙️' },
     { id: 'history', label: 'HISTORY', icon: '📜' },
   ] as const;

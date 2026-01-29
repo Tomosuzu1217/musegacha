@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Answer } from '../types';
 import { storageService } from '../services/storageService';
+import { ActivityLogView } from './ActivityLogView';
 
 export const HistoryViewer: React.FC = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null);
+  const [subTab, setSubTab] = useState<'archive' | 'activity'>('archive');
 
   useEffect(() => {
     setAnswers(storageService.getAnswers());
@@ -49,10 +51,30 @@ export const HistoryViewer: React.FC = () => {
 
   return (
     <div className="animate-in fade-in duration-500">
-      <h2 className="text-sm font-bold uppercase tracking-widest mb-6 border-b border-black pb-2">
-        アーカイブ
-      </h2>
-      
+      {/* Sub-tab Toggle */}
+      <div className="flex gap-0 mb-6 border-b border-black">
+        <button
+          onClick={() => setSubTab('archive')}
+          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
+            subTab === 'archive' ? 'border-black text-black' : 'border-transparent text-gray-300 hover:text-gray-500'
+          }`}
+        >
+          Archive
+        </button>
+        <button
+          onClick={() => setSubTab('activity')}
+          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
+            subTab === 'activity' ? 'border-black text-black' : 'border-transparent text-gray-300 hover:text-gray-500'
+          }`}
+        >
+          Activity
+        </button>
+      </div>
+
+      {subTab === 'activity' ? (
+        <ActivityLogView />
+      ) : (
+      <>
       {answers.length === 0 ? (
         <div className="py-24 text-center border border-black border-dashed">
           <p className="font-mono text-gray-400">記録データなし</p>
@@ -80,6 +102,8 @@ export const HistoryViewer: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );

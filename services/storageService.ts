@@ -1,5 +1,5 @@
 
-import { Question, Answer, StoredImage, PersonaConfig, CharacterProfile, SavedConversation, ChatMessage } from '../types';
+import { Question, Answer, StoredImage, PersonaConfig, CharacterProfile, SavedConversation, ChatMessage, ConsultSession, UserInterestProfile, ActivityLogEntry } from '../types';
 
 const KEYS = {
   QUESTIONS: 'musegacha_questions',
@@ -10,6 +10,9 @@ const KEYS = {
   PERSONA_CONFIG: 'musegacha_persona_config_v2',
   CHARACTERS: 'musegacha_characters',
   CONVERSATIONS: 'musegacha_conversations',
+  CONSULT_SESSIONS: 'musegacha_consult_sessions',
+  USER_PROFILE: 'musegacha_user_profile',
+  ACTIVITY_LOG: 'musegacha_activity_log',
 };
 
 // --- Security Configuration ---
@@ -26,6 +29,10 @@ const SECURITY_CONFIG = {
   MAX_CHARACTERS_COUNT: 20,
   MAX_IMAGE_SIZE_BYTES: 500000, // 500KB
   MAX_CONVERSATIONS_COUNT: 10,
+  MAX_CONSULT_SESSIONS: 50,
+  MAX_CONSULT_MESSAGES: 100,
+  MAX_ACTIVITY_LOG_ENTRIES: 500,
+  MAX_CONCERN_LENGTH: 2000,
 };
 
 // --- Security Utilities ---
@@ -4465,6 +4472,97 @@ export const storageService = {
     if (!isValidId(id)) return;
     const conversations = storageService.getConversations().filter(c => c.id !== id);
     localStorage.setItem(KEYS.CONVERSATIONS, JSON.stringify(conversations));
+  },
+
+  // --- Consultation Sessions ---
+  getConsultSessions: (): ConsultSession[] => {
+    const data = localStorage.getItem(KEYS.CONSULT_SESSIONS);
+    const parsed = safeJsonParse<ConsultSession[]>(data, []);
+    return parsed.filter(s => s && isValidId(s.id)).sort((a, b) => b.updatedAt - a.updatedAt);
+  },
+
+  saveConsultSession: (session: ConsultSession): void => {
+    if (!session || !isValidId(session.id)) return;
+    if (!checkStorageQuota()) return;
+
+    const sanitized: ConsultSession = {
+      ...session,
+      messages: session.messages.slice(0, SECURITY_CONFIG.MAX_CONSULT_MESSAGES).map(m => ({
+        ...m,
+        text: sanitizeString(m.text, SECURITY_CONFIG.MAX_CONCERN_LENGTH),
+      })),
+      themes: (session.themes || []).slice(0, 20).map(t => sanitizeString(t, SECURITY_CONFIG.MAX_TAG_LENGTH)),
+      summary: session.summary ? sanitizeString(session.summary, 500) : undefined,
+    };
+
+    const sessions = storageService.getConsultSessions();
+    const index = sessions.findIndex(s => s.id === session.id);
+    let updated: ConsultSession[];
+    if (index >= 0) {
+      updated = [...sessions];
+      updated[index] = sanitized;
+    } else {
+      updated = [sanitized, ...sessions].slice(0, SECURITY_CONFIG.MAX_CONSULT_SESSIONS);
+    }
+    localStorage.setItem(KEYS.CONSULT_SESSIONS, JSON.stringify(updated));
+  },
+
+  getConsultSession: (id: string): ConsultSession | undefined => {
+    if (!isValidId(id)) return undefined;
+    return storageService.getConsultSessions().find(s => s.id === id);
+  },
+
+  deleteConsultSession: (id: string): void => {
+    if (!isValidId(id)) return;
+    const sessions = storageService.getConsultSessions().filter(s => s.id !== id);
+    localStorage.setItem(KEYS.CONSULT_SESSIONS, JSON.stringify(sessions));
+  },
+
+  // --- User Interest Profile ---
+  getUserProfile: (): UserInterestProfile => {
+    const data = localStorage.getItem(KEYS.USER_PROFILE);
+    return safeJsonParse<UserInterestProfile>(data, {
+      themes: {},
+      recentConcerns: [],
+      totalConsultations: 0,
+      totalQuestionsGenerated: 0,
+      totalSessionsCompleted: 0,
+      lastUpdatedAt: Date.now(),
+    });
+  },
+
+  updateUserProfile: (updates: Partial<UserInterestProfile>): void => {
+    if (!checkStorageQuota()) return;
+    const profile = storageService.getUserProfile();
+    const updated = { ...profile, ...updates, lastUpdatedAt: Date.now() };
+    localStorage.setItem(KEYS.USER_PROFILE, JSON.stringify(updated));
+  },
+
+  incrementTheme: (theme: string): void => {
+    if (!theme) return;
+    const profile = storageService.getUserProfile();
+    const safeTheme = sanitizeString(theme, SECURITY_CONFIG.MAX_TAG_LENGTH);
+    profile.themes[safeTheme] = (profile.themes[safeTheme] || 0) + 1;
+    storageService.updateUserProfile({ themes: profile.themes });
+  },
+
+  // --- Activity Log ---
+  getActivityLog: (): ActivityLogEntry[] => {
+    const data = localStorage.getItem(KEYS.ACTIVITY_LOG);
+    return safeJsonParse<ActivityLogEntry[]>(data, []);
+  },
+
+  addActivityLog: (entry: Omit<ActivityLogEntry, 'id' | 'timestamp'>): void => {
+    if (!checkStorageQuota()) return;
+    const log = storageService.getActivityLog();
+    const newEntry: ActivityLogEntry = {
+      ...entry,
+      detail: sanitizeString(entry.detail || '', 500),
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+    };
+    const updated = [newEntry, ...log].slice(0, SECURITY_CONFIG.MAX_ACTIVITY_LOG_ENTRIES);
+    localStorage.setItem(KEYS.ACTIVITY_LOG, JSON.stringify(updated));
   },
 
   // Clear all with confirmation (returns cleared status)

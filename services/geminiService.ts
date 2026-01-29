@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Modality } from '@google/genai';
-import { Question, OutputFormat, Difficulty, Character, NewspaperContent, NoteArticleContent, ChatMessage, CharacterComment } from '../types';
+import { Question, OutputFormat, Difficulty, Character, NewspaperContent, NoteArticleContent, ChatMessage, CharacterComment, UserInterestProfile, PRESET_TAGS } from '../types';
 import { storageService } from './storageService';
 import { apiKeyRotation } from './apiKeyRotation';
 
@@ -1778,6 +1778,151 @@ export const generateCharacterComments = async (
         comment: fallbackComments[char.role] || 'この議論は意義深かった。'
       };
     });
+  }
+};
+
+// --- Consultation Chat Functions ---
+
+export interface ConsultResponseResult {
+  reply: string;
+  themes: string[];
+  shouldGenerateQuestions: boolean;
+}
+
+export const generateConsultResponse = async (
+  userMessage: string,
+  conversationHistory: { role: 'user' | 'assistant'; text: string }[],
+  userProfile?: UserInterestProfile
+): Promise<ConsultResponseResult> => {
+  await rateLimiter.waitForNext();
+  const ai = getClient();
+  const safeMessage = sanitizePromptInput(userMessage);
+
+  const historyContext = conversationHistory
+    .slice(-10)
+    .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${sanitizePromptInput(m.text)}`)
+    .join('\n');
+
+  const profileContext = userProfile && Object.keys(userProfile.themes).length > 0
+    ? `\nユーザーの関心テーマ: ${Object.entries(userProfile.themes)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5)
+        .map(([theme, count]) => `${theme}(${count}回)`)
+        .join(', ')}`
+    : '';
+
+  const prompt = `あなたは「MuseGacha」アプリの相談アシスタントです。
+ユーザーが気になっていることや悩みを聞き、共感的に応答してください。
+
+【役割】
+- 傾聴と共感を第一に
+- 深掘りの質問を投げかけてユーザーの思考を整理する手助けをする
+- 説教や解決策の押し付けはしない
+- 自然な日本語で200文字以内で応答
+${profileContext}
+
+会話ログ:
+${historyContext}
+
+ユーザーの最新メッセージ: "${safeMessage}"
+
+以下のJSON形式で応答してください:
+- reply: 共感的な応答（200文字以内）
+- themes: この会話から抽出できるテーマタグ（1-3個、既存タグ: ${PRESET_TAGS.join(', ')} から選ぶか新規作成）
+- shouldGenerateQuestions: ユーザーの悩みが十分に具体的で、議論用の質問を生成できるならtrue（最低2往復の会話が必要）`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            reply: { type: Type.STRING },
+            themes: { type: Type.ARRAY, items: { type: Type.STRING } },
+            shouldGenerateQuestions: { type: Type.BOOLEAN },
+          },
+          required: ['reply', 'themes', 'shouldGenerateQuestions'],
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || '{}');
+    return {
+      reply: parsed.reply || 'お話を聞かせていただきありがとうございます。もう少し詳しく聞かせてください。',
+      themes: Array.isArray(parsed.themes) ? parsed.themes.slice(0, 3) : [],
+      shouldGenerateQuestions: !!parsed.shouldGenerateQuestions,
+    };
+  } catch (e) {
+    logger.error('Consult response failed', e);
+    return {
+      reply: 'お話を聞かせていただきありがとうございます。もう少し詳しく聞かせてください。',
+      themes: [],
+      shouldGenerateQuestions: false,
+    };
+  }
+};
+
+export const generateQuestionsFromConsultation = async (
+  sessionSummary: string,
+  themes: string[],
+  sessionId: string
+): Promise<Partial<Question>[]> => {
+  await rateLimiter.waitForNext();
+  const ai = getClient();
+  const safeSummary = sanitizePromptInput(sessionSummary);
+  const safeSessionId = sanitizePromptInput(sessionId);
+
+  const prompt = `あなたは「問いの錬金術師」です。
+ユーザーが相談した内容に基づいて、ユーザーの状況に寄り添った議論テーマを3〜5個生成してください。
+
+相談内容の要約: "${safeSummary}"
+関連テーマ: ${themes.map(t => sanitizePromptInput(t)).join(', ')}
+
+【質問の特徴】
+- ユーザーの具体的な状況・悩みに直結する問い
+- 一般論ではなく、パーソナルな切り口
+- 議論や内省を促す形式
+- 40〜80文字程度
+
+出力形式: JSON配列
+スキーマ:
+[{
+  "text": "質問本文",
+  "difficulty": "light" | "normal" | "heavy",
+  "tags": ["タグ1", "タグ2"]
+}]`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              text: { type: Type.STRING },
+              difficulty: { type: Type.STRING, enum: ['light', 'normal', 'heavy'] },
+              tags: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ['text', 'difficulty', 'tags'],
+          }
+        }
+      }
+    });
+    const parsed = JSON.parse(response.text || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((q: any) => ({
+      ...q,
+      source: `consult-${safeSessionId}`,
+    }));
+  } catch (e) {
+    logger.error('Consultation question generation failed', e);
+    return [];
   }
 };
 

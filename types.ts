@@ -169,6 +169,48 @@ export interface SessionEndResult {
   commentatorPersona?: string;
 }
 
+// --- Consultation Chat Types ---
+
+export interface ConsultMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  timestamp: number;
+}
+
+export interface ConsultSession {
+  id: string;
+  messages: ConsultMessage[];
+  generatedQuestionIds: string[];
+  themes: string[];
+  summary?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// --- User Interest Profile ---
+
+export interface UserInterestProfile {
+  themes: Record<string, number>;
+  recentConcerns: string[];
+  totalConsultations: number;
+  totalQuestionsGenerated: number;
+  totalSessionsCompleted: number;
+  lastUpdatedAt: number;
+}
+
+// --- Activity Log ---
+
+export type ActivityType = 'consultation' | 'question_generated' | 'session_completed' | 'gacha_spin';
+
+export interface ActivityLogEntry {
+  id: string;
+  type: ActivityType;
+  detail: string;
+  metadata?: Record<string, string | number>;
+  timestamp: number;
+}
+
 // Sample tags for suggestions
 export const PRESET_TAGS = [
   '意思決定',

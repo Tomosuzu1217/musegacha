@@ -6,6 +6,7 @@ import { Editor } from './components/Editor';
 import { QuestionManager } from './components/QuestionManager';
 import { HistoryViewer } from './components/HistoryViewer';
 import { ApiKeyModal } from './components/ApiKeyModal';
+import { ConsultChat } from './components/ConsultChat';
 import { storageService } from './services/storageService';
 import { Question, FilterState, PRESET_TAGS } from './types';
 
@@ -13,7 +14,7 @@ import { Question, FilterState, PRESET_TAGS } from './types';
 declare const __GEMINI_API_KEY__: string;
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'gacha' | 'manage' | 'history'>('gacha');
+  const [activeTab, setActiveTab] = useState<'gacha' | 'consult' | 'manage' | 'history'>('gacha');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [noQuestionsAvailable, setNoQuestionsAvailable] = useState(false);
@@ -90,8 +91,26 @@ const App: React.FC = () => {
 
     const freshCandidates = candidates.filter(q => !history.includes(q.id));
     const pool = freshCandidates.length > 0 ? freshCandidates : candidates;
-    const random = pool[Math.floor(Math.random() * pool.length)];
+
+    // Weighted selection: consultation-derived questions get 3x weight
+    const CONSULT_WEIGHT = 3;
+    const weightedPool: Question[] = [];
+    for (const q of pool) {
+      const weight = q.source.startsWith('consult-') ? CONSULT_WEIGHT : 1;
+      for (let i = 0; i < weight; i++) {
+        weightedPool.push(q);
+      }
+    }
+
+    const random = weightedPool[Math.floor(Math.random() * weightedPool.length)];
     setCurrentQuestion(random);
+
+    // Log the spin
+    storageService.addActivityLog({
+      type: 'gacha_spin',
+      detail: random.text.slice(0, 50),
+      metadata: { source: random.source },
+    });
   };
 
   const startWriting = () => {
@@ -249,6 +268,7 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'consult' && <ConsultChat />}
         {activeTab === 'manage' && <QuestionManager />}
         {activeTab === 'history' && <HistoryViewer />}
       </Layout>
