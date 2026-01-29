@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { ActivityLogEntry } from '../types';
+import { useState, useEffect } from 'react';
+import { ActivityLogEntry, UserInterestProfile } from '../types';
 import { storageService } from '../services/storageService';
 
 const TYPE_LABELS: Record<string, { label: string; icon: string }> = {
@@ -13,9 +13,11 @@ const TYPE_LABELS: Record<string, { label: string; icon: string }> = {
 export const ActivityLogView: React.FC = () => {
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
   const [filter, setFilter] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserInterestProfile>(() => storageService.getUserProfile());
 
   useEffect(() => {
     setLogs(storageService.getActivityLog());
+    setProfile(storageService.getUserProfile());
   }, []);
 
   const filteredLogs = filter ? logs.filter(l => l.type === filter) : logs;
@@ -25,8 +27,6 @@ export const ActivityLogView: React.FC = () => {
     return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
-  // Stats
-  const profile = storageService.getUserProfile();
   const topThemes = Object.entries(profile.themes)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);

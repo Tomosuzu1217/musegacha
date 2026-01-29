@@ -4540,10 +4540,12 @@ export const storageService = {
 
   incrementTheme: (theme: string): void => {
     if (!theme) return;
+    if (!checkStorageQuota()) return;
     const profile = storageService.getUserProfile();
     const safeTheme = sanitizeString(theme, SECURITY_CONFIG.MAX_TAG_LENGTH);
     profile.themes[safeTheme] = (profile.themes[safeTheme] || 0) + 1;
-    storageService.updateUserProfile({ themes: profile.themes });
+    profile.lastUpdatedAt = Date.now();
+    localStorage.setItem(KEYS.USER_PROFILE, JSON.stringify(profile));
   },
 
   // --- Activity Log ---

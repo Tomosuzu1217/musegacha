@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ConsultSession, ConsultMessage, Question } from '../types';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ConsultSession, ConsultMessage, Question, UserInterestProfile } from '../types';
 import { storageService } from '../services/storageService';
 import { generateConsultResponse, generateQuestionsFromConsultation } from '../services/geminiService';
 
@@ -12,18 +12,26 @@ export const ConsultChat: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedCount, setGeneratedCount] = useState(0);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [profile, setProfile] = useState<UserInterestProfile | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { loadSessions(); }, []);
+  const loadSessions = useCallback(() => {
+    setSessions(storageService.getConsultSessions());
+  }, []);
+
+  const refreshProfile = useCallback(() => {
+    setProfile(storageService.getUserProfile());
+  }, []);
+
+  useEffect(() => {
+    loadSessions();
+    refreshProfile();
+  }, [loadSessions, refreshProfile]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages?.length]);
-
-  const loadSessions = () => {
-    setSessions(storageService.getConsultSessions());
-  };
 
   const startNewSession = () => {
     const newSession: ConsultSession = {
@@ -58,6 +66,58 @@ export const ConsultChat: React.FC = () => {
     loadSessions();
   };
 
+  // Shared: generate questions from a session and update storage/state
+  const generateAndSaveQuestions = async (session: ConsultSession): Promise<ConsultSession> => {
+    const summary = session.messages
+      .filter(m => m.role === 'user')
+      .map(m => m.text)
+      .join(' ');
+
+    const questions = await generateQuestionsFromConsultation(summary, session.themes, session.id);
+    if (questions.length === 0) return session;
+
+    const fullQuestions: Question[] = questions.map(q => ({
+      id: crypto.randomUUID(),
+      text: q.text || '',
+      source: q.source || `consult-${session.id}`,
+      tags: q.tags || session.themes,
+      difficulty: (q.difficulty as Question['difficulty']) || 'normal',
+      createdAt: Date.now(),
+    }));
+
+    storageService.addQuestionsBatch(fullQuestions);
+    setGeneratedCount(fullQuestions.length);
+
+    const notifyMsg: ConsultMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      text: `\u2728 ${fullQuestions.length}個のオリジナル質問を作成しました。GACHAタブで優先的に出題されます。`,
+      timestamp: Date.now(),
+    };
+
+    const updated: ConsultSession = {
+      ...session,
+      messages: [...session.messages, notifyMsg],
+      generatedQuestionIds: fullQuestions.map(q => q.id),
+      updatedAt: Date.now(),
+    };
+
+    const currentProfile = storageService.getUserProfile();
+    storageService.updateUserProfile({
+      totalConsultations: currentProfile.totalConsultations + 1,
+      totalQuestionsGenerated: currentProfile.totalQuestionsGenerated + fullQuestions.length,
+      recentConcerns: [summary.slice(0, 200), ...currentProfile.recentConcerns].slice(0, 10),
+    });
+
+    storageService.addActivityLog({
+      type: 'question_generated',
+      detail: `${fullQuestions.length}個の質問を相談から生成`,
+      metadata: { sessionId: session.id, count: fullQuestions.length },
+    });
+
+    return updated;
+  };
+
   const handleSend = async () => {
     if (!input.trim() || !activeSession || isProcessing) return;
 
@@ -78,11 +138,10 @@ export const ConsultChat: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      const userProfile = storageService.getUserProfile();
       const result = await generateConsultResponse(
         userMsg.text,
         updatedSession.messages.map(m => ({ role: m.role, text: m.text })),
-        userProfile
+        profile || undefined
       );
 
       const assistantMsg: ConsultMessage = {
@@ -92,94 +151,43 @@ export const ConsultChat: React.FC = () => {
         timestamp: Date.now(),
       };
 
-      const sessionWithReply: ConsultSession = {
+      let sessionWithReply: ConsultSession = {
         ...updatedSession,
         messages: [...updatedSession.messages, assistantMsg],
         themes: [...new Set([...updatedSession.themes, ...result.themes])],
         updatedAt: Date.now(),
       };
 
-      // Update theme tracking
       result.themes.forEach(theme => storageService.incrementTheme(theme));
 
-      // Log the consultation
       storageService.addActivityLog({
         type: 'consultation',
         detail: userMsg.text.slice(0, 100),
       });
 
-      // Auto-generate questions if AI determines enough context
       if (result.shouldGenerateQuestions && sessionWithReply.generatedQuestionIds.length === 0) {
         setIsGeneratingQuestions(true);
-
-        const summary = sessionWithReply.messages
-          .filter(m => m.role === 'user')
-          .map(m => m.text)
-          .join(' ');
-
-        const questions = await generateQuestionsFromConsultation(
-          summary,
-          sessionWithReply.themes,
-          sessionWithReply.id
-        );
-
-        if (questions.length > 0) {
-          const fullQuestions: Question[] = questions.map(q => ({
-            id: crypto.randomUUID(),
-            text: q.text || '',
-            source: q.source || `consult-${sessionWithReply.id}`,
-            tags: q.tags || sessionWithReply.themes,
-            difficulty: (q.difficulty as Question['difficulty']) || 'normal',
-            createdAt: Date.now(),
-          }));
-
-          storageService.addQuestionsBatch(fullQuestions);
-          setGeneratedCount(fullQuestions.length);
-
-          const notifyMsg: ConsultMessage = {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            text: `\u2728 あなたのお話から ${fullQuestions.length}個のオリジナル質問を作成しました。GACHAタブで優先的に出題されます。`,
-            timestamp: Date.now(),
-          };
-
-          sessionWithReply.messages.push(notifyMsg);
-          sessionWithReply.generatedQuestionIds = fullQuestions.map(q => q.id);
-
-          // Update profile
-          const profile = storageService.getUserProfile();
-          storageService.updateUserProfile({
-            totalConsultations: profile.totalConsultations + 1,
-            totalQuestionsGenerated: profile.totalQuestionsGenerated + fullQuestions.length,
-            recentConcerns: [summary.slice(0, 200), ...profile.recentConcerns].slice(0, 10),
-          });
-
-          storageService.addActivityLog({
-            type: 'question_generated',
-            detail: `${fullQuestions.length}個の質問を相談から生成`,
-            metadata: { sessionId: sessionWithReply.id, count: fullQuestions.length },
-          });
-        }
+        sessionWithReply = await generateAndSaveQuestions(sessionWithReply);
         setIsGeneratingQuestions(false);
       }
 
       setActiveSession(sessionWithReply);
       storageService.saveConsultSession(sessionWithReply);
       loadSessions();
+      refreshProfile();
     } catch (error) {
       console.error('Consultation error:', error);
       const errorMsg: ConsultMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        text: '\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002',
+        text: 'エラーが発生しました。もう一度お試しください。',
         timestamp: Date.now(),
       };
-      const sessionWithError: ConsultSession = {
+      setActiveSession({
         ...updatedSession,
         messages: [...updatedSession.messages, errorMsg],
         updatedAt: Date.now(),
-      };
-      setActiveSession(sessionWithError);
+      });
     } finally {
       setIsProcessing(false);
       setIsGeneratingQuestions(false);
@@ -199,60 +207,10 @@ export const ConsultChat: React.FC = () => {
 
     setIsGeneratingQuestions(true);
     try {
-      const summary = activeSession.messages
-        .filter(m => m.role === 'user')
-        .map(m => m.text)
-        .join(' ');
-
-      const questions = await generateQuestionsFromConsultation(
-        summary,
-        activeSession.themes,
-        activeSession.id
-      );
-
-      if (questions.length > 0) {
-        const fullQuestions: Question[] = questions.map(q => ({
-          id: crypto.randomUUID(),
-          text: q.text || '',
-          source: q.source || `consult-${activeSession.id}`,
-          tags: q.tags || activeSession.themes,
-          difficulty: (q.difficulty as Question['difficulty']) || 'normal',
-          createdAt: Date.now(),
-        }));
-
-        storageService.addQuestionsBatch(fullQuestions);
-        setGeneratedCount(fullQuestions.length);
-
-        const notifyMsg: ConsultMessage = {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          text: `\u2728 ${fullQuestions.length}個のオリジナル質問を作成しました。GACHAタブで優先的に出題されます。`,
-          timestamp: Date.now(),
-        };
-
-        const updatedSession: ConsultSession = {
-          ...activeSession,
-          messages: [...activeSession.messages, notifyMsg],
-          generatedQuestionIds: fullQuestions.map(q => q.id),
-          updatedAt: Date.now(),
-        };
-
-        setActiveSession(updatedSession);
-        storageService.saveConsultSession(updatedSession);
-
-        const profile = storageService.getUserProfile();
-        storageService.updateUserProfile({
-          totalConsultations: profile.totalConsultations + 1,
-          totalQuestionsGenerated: profile.totalQuestionsGenerated + fullQuestions.length,
-          recentConcerns: [summary.slice(0, 200), ...profile.recentConcerns].slice(0, 10),
-        });
-
-        storageService.addActivityLog({
-          type: 'question_generated',
-          detail: `${fullQuestions.length}個の質問を相談から生成`,
-          metadata: { sessionId: activeSession.id, count: fullQuestions.length },
-        });
-      }
+      const updated = await generateAndSaveQuestions(activeSession);
+      setActiveSession(updated);
+      storageService.saveConsultSession(updated);
+      refreshProfile();
     } catch (error) {
       console.error('Manual question generation error:', error);
     } finally {

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { QuestionCard } from './components/QuestionCard';
 import { Editor } from './components/Editor';
@@ -94,15 +94,16 @@ const App: React.FC = () => {
 
     // Weighted selection: consultation-derived questions get 3x weight
     const CONSULT_WEIGHT = 3;
-    const weightedPool: Question[] = [];
+    let totalWeight = 0;
     for (const q of pool) {
-      const weight = q.source.startsWith('consult-') ? CONSULT_WEIGHT : 1;
-      for (let i = 0; i < weight; i++) {
-        weightedPool.push(q);
-      }
+      totalWeight += q.source.startsWith('consult-') ? CONSULT_WEIGHT : 1;
     }
-
-    const random = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+    let roll = Math.random() * totalWeight;
+    let random = pool[0];
+    for (const q of pool) {
+      roll -= q.source.startsWith('consult-') ? CONSULT_WEIGHT : 1;
+      if (roll <= 0) { random = q; break; }
+    }
     setCurrentQuestion(random);
 
     // Log the spin
