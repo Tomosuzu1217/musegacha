@@ -3,13 +3,13 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyByoJrmYT3_DjDedd4rREEMXveLqCme-1w",
-  authDomain: "radio-studio-b11c1.firebaseapp.com",
-  projectId: "radio-studio-b11c1",
-  storageBucket: "radio-studio-b11c1.firebasestorage.app",
-  messagingSenderId: "716405032428",
-  appId: "1:716405032428:web:e6509f01d9b6300ae2acc9",
-  measurementId: "G-4RCX448XR4"
+  apiKey: "AIzaSyCIlu-Lj40XK8_g7DErSJwFvi0RglDMbf4",
+  authDomain: "mental-sync.firebaseapp.com",
+  projectId: "mental-sync",
+  storageBucket: "mental-sync.firebasestorage.app",
+  messagingSenderId: "147681542302",
+  appId: "1:147681542302:web:8632ec18bed820e57afb8f",
+  measurementId: "G-FQ5KB494Z2"
 };
 
 const app = initializeApp(firebaseConfig);
