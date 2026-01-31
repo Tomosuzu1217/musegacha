@@ -234,7 +234,8 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
       avatarUrl: hostProfile?.avatarUrl || hostAvatar,
       voiceName: hostProfile?.voiceName || 'Kore',
       persona: hostProfile?.persona || 'Cool and intellectual moderator.',
-      pitch: hostProfile?.pitch ?? 1.0
+      pitch: hostProfile?.pitch ?? 1.0,
+      expressions: hostProfile?.expressions,
     };
 
     const commentator: Character = {
@@ -243,7 +244,8 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
       avatarUrl: guestProfile?.avatarUrl || guestAvatar,
       voiceName: guestProfile?.voiceName || 'Fenrir',
       persona: guestProfile?.persona || 'Critical and insightful commentator.',
-      pitch: guestProfile?.pitch ?? 1.0
+      pitch: guestProfile?.pitch ?? 1.0,
+      expressions: guestProfile?.expressions,
     };
 
     const userVoiceConfig = userVoiceService.loadConfig();
@@ -1211,6 +1213,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     if (recordingCanvasRef.current) {
       recordingCanvasRef.current.dataset.activeRole = msg.role;
       recordingCanvasRef.current.dataset.currentText = msg.text;
+      recordingCanvasRef.current.dataset.currentEmotion = msg.emotion || 'neutral';
     }
 
     const char = charactersRef.current.find(c => c.id === msg.role);
@@ -1415,9 +1418,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     // Guest: Bottom Right
     const guestPos = { x: 780, y: 1400, scale: 1.0 };
 
-    // 現在の発話者を取得
-    let activeRole: SpeakerRole | null = null;
-    let currentText = '';
+    // 現在の発話者・テキスト・感情はcanvas.datasetから取得（クロージャ対策）
 
     // 現在のメッセージインデックスを参照（stateは非同期なのでrefを使うべきだが、簡易的にstate使用）
     // NOTE: React state inside requestAnimationFrame might be stale without refs, 
@@ -1496,10 +1497,21 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
       ctx.restore();
     };
 
-    // 画像取得
-    const hostImg = avatarImagesRef.current.get('moderator');
-    const userImg = avatarImagesRef.current.get('user');
-    const guestImg = avatarImagesRef.current.get('commentator');
+    // 画像取得（発話中キャラは表情画像を使用）
+    const activeRole = canvas.dataset.activeRole;
+    const emotion = canvas.dataset.currentEmotion || 'neutral';
+
+    const getCharImg = (charId: string) => {
+      if (charId === activeRole && emotion !== 'neutral') {
+        const expressionImg = avatarImagesRef.current.get(`${charId}-${emotion}`);
+        if (expressionImg) return expressionImg;
+      }
+      return avatarImagesRef.current.get(charId);
+    };
+
+    const hostImg = getCharImg('moderator');
+    const userImg = getCharImg('user');
+    const guestImg = getCharImg('commentator');
 
     // 描画実行
     drawAvatar('moderator', hostImg, hostPos.x, hostPos.y, true);
@@ -1594,172 +1606,175 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     const selectedCommentator = availableCharacters.find(c => c.id === selectedCommentatorId);
 
     return (
-      <div className="flex flex-col h-full bg-debate-dark bg-grid-dark relative overflow-hidden">
+      <div className="absolute inset-0 flex flex-col bg-debate-dark bg-grid-dark">
         {/* 装飾的な光の効果 */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none z-0" />
 
-        <div className="flex-1 overflow-y-auto p-4 relative z-10">
-          {/* ヘッダー */}
-          <div className="text-center py-4">
-            <h2 className="font-display font-bold text-2xl uppercase tracking-widest gradient-text">
-              キャラクター選択
-            </h2>
-            <p className="font-mono text-xs text-gray-500 mt-1">
-              🎭 会話に参加するキャラクターを選んでください
-            </p>
-          </div>
-
-          {/* お題表示 */}
-          <div className="glass rounded-xl p-4 mb-4 max-w-lg mx-auto">
-            <p className="text-white text-sm text-center">{question.text}</p>
-          </div>
-
-          {/* 選択モード切り替え */}
-          <div className="flex justify-center gap-2 mb-4">
-            <button
-              onClick={() => setCharacterSelectionMode('auto')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'auto'
-                ? 'bg-purple-600 text-white'
-                : 'glass text-white/70 hover:bg-white/10'
-                }`}
-            >
-              🎯 自動選択
-            </button>
-            <button
-              onClick={randomizeCharacters}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'random'
-                ? 'bg-blue-600 text-white'
-                : 'glass text-white/70 hover:bg-white/10'
-                }`}
-            >
-              🎲 ランダム
-            </button>
-            <button
-              onClick={() => setCharacterSelectionMode('manual')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'manual'
-                ? 'bg-green-600 text-white'
-                : 'glass text-white/70 hover:bg-white/10'
-                }`}
-            >
-              ✋ 手動選択
-            </button>
-          </div>
-
-          {/* 選択中のキャラクター表示 */}
-          <div className="flex justify-center gap-8 mb-6">
-            <div className="flex flex-col items-center">
-              <div className="text-[10px] text-gray-400 mb-1 uppercase">Moderator</div>
-              {selectedModerator && (
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500 glow-purple">
-                  <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt={selectedModerator.name} />
-                </div>
-              )}
-              <p className="mt-1 text-white text-sm font-bold">{selectedModerator?.name || '未選択'}</p>
+        {/* スクロール領域: absolute で親サイズに固定 */}
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+          <div className="absolute inset-0 overflow-y-auto p-4 z-10" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {/* ヘッダー */}
+            <div className="text-center py-4">
+              <h2 className="font-display font-bold text-2xl uppercase tracking-widest gradient-text">
+                キャラクター選択
+              </h2>
+              <p className="font-mono text-xs text-gray-500 mt-1">
+                🎭 会話に参加するキャラクターを選んでください
+              </p>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="text-[10px] text-gray-400 mb-1 uppercase">Commentator</div>
-              {selectedCommentator && (
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-red-500 glow-red">
-                  <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt={selectedCommentator.name} />
-                </div>
-              )}
-              <p className="mt-1 text-white text-sm font-bold">{selectedCommentator?.name || '未選択'}</p>
-            </div>
-          </div>
 
-          {/* キャラクター一覧（手動選択時） */}
-          {characterSelectionMode === 'manual' && (
-            <div className="max-w-2xl mx-auto">
-              <div className="text-[10px] text-gray-400 mb-2 uppercase text-center">
-                キャラクターをタップして選択（1人目: Moderator, 2人目: Commentator）
+            {/* お題表示 */}
+            <div className="glass rounded-xl p-4 mb-4 max-w-lg mx-auto">
+              <p className="text-white text-sm text-center">{question.text}</p>
+            </div>
+
+            {/* 選択モード切り替え */}
+            <div className="flex justify-center gap-2 mb-4">
+              <button
+                onClick={() => setCharacterSelectionMode('auto')}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'auto'
+                  ? 'bg-purple-600 text-white'
+                  : 'glass text-white/70 hover:bg-white/10'
+                  }`}
+              >
+                🎯 自動選択
+              </button>
+              <button
+                onClick={randomizeCharacters}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'random'
+                  ? 'bg-blue-600 text-white'
+                  : 'glass text-white/70 hover:bg-white/10'
+                  }`}
+              >
+                🎲 ランダム
+              </button>
+              <button
+                onClick={() => setCharacterSelectionMode('manual')}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'manual'
+                  ? 'bg-green-600 text-white'
+                  : 'glass text-white/70 hover:bg-white/10'
+                  }`}
+              >
+                ✋ 手動選択
+              </button>
+            </div>
+
+            {/* 選択中のキャラクター表示 */}
+            <div className="flex justify-center gap-8 mb-6">
+              <div className="flex flex-col items-center">
+                <div className="text-[10px] text-gray-400 mb-1 uppercase">Moderator</div>
+                {selectedModerator && (
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500 glow-purple">
+                    <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt={selectedModerator.name} />
+                  </div>
+                )}
+                <p className="mt-1 text-white text-sm font-bold">{selectedModerator?.name || '未選択'}</p>
               </div>
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-                {availableCharacters.map((char) => {
-                  const isModerator = char.id === selectedModeratorId;
-                  const isCommentator = char.id === selectedCommentatorId;
-                  const isSelected = isModerator || isCommentator;
+              <div className="flex flex-col items-center">
+                <div className="text-[10px] text-gray-400 mb-1 uppercase">Commentator</div>
+                {selectedCommentator && (
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-red-500 glow-red">
+                    <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt={selectedCommentator.name} />
+                  </div>
+                )}
+                <p className="mt-1 text-white text-sm font-bold">{selectedCommentator?.name || '未選択'}</p>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={char.id}
-                      onClick={() => {
-                        if (isModerator) {
-                          setSelectedModeratorId(null);
-                        } else if (isCommentator) {
-                          setSelectedCommentatorId(null);
-                        } else if (!selectedModeratorId) {
-                          setSelectedModeratorId(char.id);
-                        } else if (!selectedCommentatorId && char.id !== selectedModeratorId) {
-                          setSelectedCommentatorId(char.id);
-                        } else {
-                          // 既に2人選択済みの場合、Moderatorを入れ替え
-                          setSelectedModeratorId(char.id);
-                        }
-                      }}
-                      className={`flex flex-col items-center p-2 rounded-xl transition-all ${isSelected
-                        ? isModerator
-                          ? 'bg-purple-600/30 ring-2 ring-purple-500'
-                          : 'bg-red-600/30 ring-2 ring-red-500'
-                        : 'glass hover:bg-white/10'
-                        }`}
-                    >
-                      <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${isSelected
-                        ? isModerator ? 'border-purple-500' : 'border-red-500'
-                        : 'border-white/20'
-                        }`}>
-                        <img src={char.avatarUrl} className="w-full h-full object-cover" alt={char.name} />
+            {/* キャラクター一覧（手動選択時） */}
+            {characterSelectionMode === 'manual' && (
+              <div className="max-w-2xl mx-auto pb-4">
+                <div className="text-[10px] text-gray-400 mb-2 uppercase text-center">
+                  キャラクターをタップして選択（1人目: Moderator, 2人目: Commentator）
+                </div>
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+                  {availableCharacters.map((char) => {
+                    const isModerator = char.id === selectedModeratorId;
+                    const isCommentator = char.id === selectedCommentatorId;
+                    const isSelected = isModerator || isCommentator;
+
+                    return (
+                      <button
+                        key={char.id}
+                        onClick={() => {
+                          if (isModerator) {
+                            setSelectedModeratorId(null);
+                          } else if (isCommentator) {
+                            setSelectedCommentatorId(null);
+                          } else if (!selectedModeratorId) {
+                            setSelectedModeratorId(char.id);
+                          } else if (!selectedCommentatorId && char.id !== selectedModeratorId) {
+                            setSelectedCommentatorId(char.id);
+                          } else {
+                            // 既に2人選択済みの場合、Moderatorを入れ替え
+                            setSelectedModeratorId(char.id);
+                          }
+                        }}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${isSelected
+                          ? isModerator
+                            ? 'bg-purple-600/30 ring-2 ring-purple-500'
+                            : 'bg-red-600/30 ring-2 ring-red-500'
+                          : 'glass hover:bg-white/10'
+                          }`}
+                      >
+                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${isSelected
+                          ? isModerator ? 'border-purple-500' : 'border-red-500'
+                          : 'border-white/20'
+                          }`}>
+                          <img src={char.avatarUrl} className="w-full h-full object-cover" alt={char.name} />
+                        </div>
+                        <p className="mt-1 text-white text-[10px] font-bold truncate w-full text-center">
+                          {char.name}
+                        </p>
+                        {isSelected && (
+                          <span className={`text-[8px] ${isModerator ? 'text-purple-400' : 'text-red-400'}`}>
+                            {isModerator ? 'M' : 'C'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* キャラクター説明（自動選択時） */}
+            {characterSelectionMode !== 'manual' && (
+              <div className="max-w-lg mx-auto space-y-3">
+                {selectedModerator && (
+                  <div className="glass rounded-xl p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-purple-500 flex-shrink-0">
+                        <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt="" />
                       </div>
-                      <p className="mt-1 text-white text-[10px] font-bold truncate w-full text-center">
-                        {char.name}
-                      </p>
-                      {isSelected && (
-                        <span className={`text-[8px] ${isModerator ? 'text-purple-400' : 'text-red-400'}`}>
-                          {isModerator ? 'M' : 'C'}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                      <div>
+                        <p className="text-white text-sm font-bold">{selectedModerator.name}</p>
+                        <p className="text-gray-400 text-[10px]">{selectedModerator.persona?.slice(0, 50)}...</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedCommentator && (
+                  <div className="glass rounded-xl p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-red-500 flex-shrink-0">
+                        <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <div>
+                        <p className="text-white text-sm font-bold">{selectedCommentator.name}</p>
+                        <p className="text-gray-400 text-[10px]">{selectedCommentator.persona?.slice(0, 50)}...</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* キャラクター説明（自動選択時） */}
-          {characterSelectionMode !== 'manual' && (
-            <div className="max-w-lg mx-auto space-y-3">
-              {selectedModerator && (
-                <div className="glass rounded-xl p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-purple-500 flex-shrink-0">
-                      <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt="" />
-                    </div>
-                    <div>
-                      <p className="text-white text-sm font-bold">{selectedModerator.name}</p>
-                      <p className="text-gray-400 text-[10px]">{selectedModerator.persona?.slice(0, 50)}...</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {selectedCommentator && (
-                <div className="glass rounded-xl p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-red-500 flex-shrink-0">
-                      <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt="" />
-                    </div>
-                    <div>
-                      <p className="text-white text-sm font-bold">{selectedCommentator.name}</p>
-                      <p className="text-gray-400 text-[10px]">{selectedCommentator.persona?.slice(0, 50)}...</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* スタートボタン */}
-        <div className="p-4 glass-dark">
+        {/* スタートボタン（固定フッター） */}
+        <div className="shrink-0 p-4 glass-dark relative z-10">
           <button
             onClick={startSessionWithCharacters}
             disabled={!selectedModeratorId || !selectedCommentatorId}
@@ -1790,13 +1805,14 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     };
 
     return (
-      <div className="flex flex-col h-full bg-debate-dark bg-grid-dark relative overflow-hidden">
+      <div className="absolute inset-0 flex flex-col bg-debate-dark bg-grid-dark">
         {/* 装飾的な光の効果 */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none z-0" />
 
         {/* メッセージエリア */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-44 relative z-10">
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+          <div className="absolute inset-0 overflow-y-auto p-4 space-y-4 pb-44 z-10" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* ヘッダー */}
           <div className="text-center py-6">
             <h2 className="font-display font-bold text-2xl uppercase tracking-widest gradient-text">
@@ -1834,10 +1850,20 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
           {/* チャットメッセージ */}
           {scriptMessages.map((msg) => {
             const userRecording = msg.role === 'user' ? savedRecordings.find(r => r.messageId === msg.id) : null;
+            const msgChar = charactersRef.current.find(c => c.id === msg.role);
+            const msgAvatarUrl = msgChar
+              ? (msgChar.expressions?.[(msg.emotion || 'neutral') as keyof import('../types').CharacterExpressions] || msgChar.avatarUrl)
+              : '';
 
             return (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-sm relative transition-all ${msg.role === 'user'
+                {/* アバター（左側 - Host/Guest） */}
+                {msg.role !== 'user' && msgChar && (
+                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/20 shrink-0 mr-2 mt-1">
+                    <img src={msgAvatarUrl} className="w-full h-full object-cover" alt={msgChar.name} />
+                  </div>
+                )}
+                <div className={`max-w-[75%] p-4 rounded-2xl text-sm relative transition-all ${msg.role === 'user'
                   ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white glow-blue'
                   : msg.role === 'moderator'
                     ? 'glass text-white'
@@ -1847,7 +1873,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                     <span className={`w-2 h-2 rounded-full ${msg.role === 'user' ? 'bg-blue-300' : msg.role === 'moderator' ? 'bg-white/60' : 'bg-red-300'
                       }`} />
                     <span className="text-[10px] font-bold uppercase opacity-80">
-                      {msg.role === 'moderator' ? 'Host' : msg.role === 'commentator' ? 'Guest' : 'ZENZEN'}
+                      {msgChar?.name || (msg.role === 'moderator' ? 'Host' : msg.role === 'commentator' ? 'Guest' : 'ZENZEN')}
                     </span>
                     {/* 録音再生ボタン */}
                     {userRecording && (
@@ -1864,6 +1890,12 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   </div>
                   <p className="leading-relaxed">{msg.text}</p>
                 </div>
+                {/* アバター（右側 - User） */}
+                {msg.role === 'user' && msgChar && (
+                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-400/30 shrink-0 ml-2 mt-1">
+                    <img src={msgAvatarUrl} className="w-full h-full object-cover" alt={msgChar.name} />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -1930,6 +1962,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
               </p>
             </div>
           )}
+          </div>
         </div>
 
         {/* Hidden Canvas for Recording */}
@@ -2067,7 +2100,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
   // 2. Loading View - Modern Dark Theme
   if (mode === 'loading') {
     return (
-      <div className="w-full h-full bg-debate-dark text-white flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-debate-dark text-white flex flex-col items-center justify-center">
         {/* 装飾的な光の効果 */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-red-500/20 rounded-full blur-3xl animate-pulse pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '1s' }} />
@@ -2112,10 +2145,10 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
   // 2.5. Editing View - Audio Card List
   if (mode === 'editing') {
     return (
-      <div className="flex flex-col h-full bg-debate-dark bg-grid-dark relative overflow-hidden">
+      <div className="absolute inset-0 flex flex-col bg-debate-dark bg-grid-dark">
         {/* 背景効果 */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none z-0" />
 
         {/* ヘッダー */}
         <div className="glass p-4 flex items-center justify-between z-20 shrink-0">
@@ -2132,7 +2165,8 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
         </div>
 
         {/* カードリスト */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+          <div className="absolute inset-0 overflow-y-auto p-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {scriptRef.current.map((msg, index) => {
             const char = charactersRef.current.find(c => c.id === msg.role);
             const audioInfo = editingAudioData.get(msg.id);
@@ -2144,9 +2178,9 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
               <div key={msg.id} className="glass rounded-xl p-4 transition-all hover:bg-white/10">
                 {/* カードヘッダー */}
                 <div className="flex items-center gap-3 mb-3">
-                  {/* アバター */}
+                  {/* アバター（表情対応） */}
                   <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shrink-0">
-                    <img src={char?.avatarUrl || ''} className="w-full h-full object-cover" alt={char?.name} />
+                    <img src={char?.expressions?.[(msg.emotion || 'neutral') as keyof import('../types').CharacterExpressions] || char?.avatarUrl || ''} className="w-full h-full object-cover" alt={char?.name} />
                   </div>
                   {/* 情報 */}
                   <div className="flex-1 min-w-0">
@@ -2275,10 +2309,11 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* 動画生成ボタン */}
-        <div className="glass p-6 shrink-0">
+        <div className="glass p-6 shrink-0 relative z-10">
           <button
             onClick={startLoadingAudio}
             className="w-full bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 text-white font-bold font-display uppercase text-lg px-8 py-4 rounded-full hover:scale-[1.02] transition-transform"
@@ -2296,7 +2331,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
   // 2.8. Complete View - Save Options
   if (mode === 'complete') {
     return (
-      <div className="flex flex-col h-full bg-debate-dark bg-grid-dark relative overflow-hidden items-center justify-center">
+      <div className="absolute inset-0 flex flex-col bg-debate-dark bg-grid-dark items-center justify-center">
         {/* 背景効果 */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -2390,7 +2425,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
   const activeStyle = currentSpeaker ? getRoleStyle(currentSpeaker) : getRoleStyle('moderator');
 
   return (
-    <div className={`w-full h-full flex items-center justify-center relative overflow-hidden ${stageTheme || 'bg-debate-dark'}`}>
+    <div className={`absolute inset-0 flex items-center justify-center overflow-hidden ${stageTheme || 'bg-debate-dark'}`}>
       {/* Subtle gradient flow - serverless style */}
       <div className="bg-gradient-flow" />
 

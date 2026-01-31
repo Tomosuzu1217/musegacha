@@ -4747,9 +4747,31 @@ export const storageService = {
   },
 
   // Clear all with confirmation (returns cleared status)
+  // APIキーは保持する
   clearAll: (): boolean => {
     try {
+      // APIキー関連を退避
+      const apiKey = localStorage.getItem(KEYS.API_KEY);
+      const apiKeys = localStorage.getItem('musegacha_api_keys');
+      const apiKeyUsage = localStorage.getItem('musegacha_api_key_usage');
+      const elevenLabsKey = localStorage.getItem('eleven_labs_api_key');
+      const voiceConfig = localStorage.getItem('user_voice_config');
+      const stageTheme = localStorage.getItem('preferred_stage_theme');
+      const theme = localStorage.getItem('preferred_theme');
+      const font = localStorage.getItem('preferred_font');
+
       localStorage.clear();
+
+      // APIキー関連を復元
+      if (apiKey) localStorage.setItem(KEYS.API_KEY, apiKey);
+      if (apiKeys) localStorage.setItem('musegacha_api_keys', apiKeys);
+      if (apiKeyUsage) localStorage.setItem('musegacha_api_key_usage', apiKeyUsage);
+      if (elevenLabsKey) localStorage.setItem('eleven_labs_api_key', elevenLabsKey);
+      if (voiceConfig) localStorage.setItem('user_voice_config', voiceConfig);
+      if (stageTheme) localStorage.setItem('preferred_stage_theme', stageTheme);
+      if (theme) localStorage.setItem('preferred_theme', theme);
+      if (font) localStorage.setItem('preferred_font', font);
+
       cache = null;
       return true;
     } catch {

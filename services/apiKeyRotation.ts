@@ -84,6 +84,12 @@ class ApiKeyRotationService {
                 });
             }
 
+            // Also check storageService key (musegacha_api_key_v3)
+            const v3Key = localStorage.getItem('musegacha_api_key_v3');
+            if (v3Key?.startsWith('AIza') && !allKeys.includes(v3Key)) {
+                allKeys.push(v3Key);
+            }
+
             // Also check the single key storage (backward compatibility)
             const singleKey = localStorage.getItem('gemini_api_key');
             if (singleKey?.startsWith('AIza') && !allKeys.includes(singleKey)) {

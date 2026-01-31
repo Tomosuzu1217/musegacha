@@ -35,6 +35,13 @@ dist-ssr
 *.key
 credentials.json
 secrets.json
+*-firebase-adminsdk-*.json
+
+# Firebase local files
+.firebase/
 
 # Claude Code local settings
 .claude/
+
+# Windows artifacts
+nul

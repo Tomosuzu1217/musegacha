@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { storageService } from '../services/storageService';
+import { apiKeyRotation } from '../services/apiKeyRotation';
 
 interface LiveSessionProps {
   question: string;
@@ -36,7 +37,7 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
 
   const startSession = async () => {
     try {
-      const apiKey = storageService.getApiKey();
+      const apiKey = apiKeyRotation.getCurrentKey() || storageService.getApiKey();
       if (!apiKey) throw new Error('API Key not found');
 
       const ai = new GoogleGenAI({ apiKey });

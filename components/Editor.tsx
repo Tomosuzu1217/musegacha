@@ -444,10 +444,10 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 relative overflow-hidden flex flex-col bg-gray-50">
+      <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-gray-50">
 
         {mode === 'setup' && (
-          <div className="flex flex-col h-full overflow-hidden relative">
+          <div className="absolute inset-0 flex flex-col overflow-hidden">
             {/* 背景プレビュー（ぼかし+アニメーション） */}
             <div
               className="absolute inset-0 transition-all duration-700 ease-out"
@@ -463,7 +463,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
             <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/80" />
 
             {/* コンテンツ */}
-            <div className="relative z-10 flex flex-col h-full overflow-y-auto pb-20">
+            <div className="relative z-10 flex-1 overflow-y-auto pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-6 text-center">
                 <h3 className="font-display text-2xl font-bold uppercase mb-2">ステージ選択</h3>
                 <p className="font-mono text-xs text-gray-600">

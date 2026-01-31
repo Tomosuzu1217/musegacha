@@ -59,10 +59,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
 
     const added = apiKeyRotation.addKey(key);
     if (added) {
-      // Also set in storageService for backward compatibility
-      if (!storageService.getApiKey()) {
-        storageService.setApiKey(key);
-      }
+      // storageServiceにも常に同期（APIキー消失防止）
+      storageService.setApiKey(key);
       setNewApiKey('');
       refreshKeyList();
     } else {

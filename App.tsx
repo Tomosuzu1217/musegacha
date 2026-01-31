@@ -276,8 +276,8 @@ const App: React.FC = () => {
                 </div>
               </div>
             ) : (
-              // Editor takes full screen
-              <div className="fixed inset-0 z-50 bg-white flex flex-col">
+              // Editor takes full screen (z-[60] to cover bottom nav z-50)
+              <div className="fixed inset-0 z-[60] bg-white flex flex-col">
                 <Editor question={currentQuestion} onClose={handleEditorClose} />
               </div>
             )}
