@@ -119,10 +119,10 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
 
   return (
     <>
-      <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-white/5 transition-colors">
         <div 
           onClick={() => setIsOpen(true)}
-          className="w-20 h-20 shrink-0 border border-gray-300 hover:border-black cursor-pointer overflow-hidden relative group bg-gray-100 rounded-lg shadow-sm"
+          className="w-20 h-20 shrink-0 border border-white/10 hover:border-purple-500/30 cursor-pointer overflow-hidden relative group bg-white/5 rounded-lg shadow-sm"
         >
           {currentImage ? (
             <img src={currentImage} alt={label} className="w-full h-full object-cover" />
@@ -147,22 +147,22 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
 
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsOpen(false)}>
-          <div className="bg-white border border-black w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 shadow-2xl relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+          <div className="card-cinematic rounded-xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 shadow-2xl relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6 shrink-0">
               <h3 className="font-display font-bold text-xl uppercase">画像を選択</h3>
               <button onClick={() => setIsOpen(false)} className="text-xs font-mono underline hover:text-gray-500">CLOSE</button>
             </div>
 
-            <div className="flex border-b border-gray-200 mb-6 shrink-0">
-              <button 
+            <div className="flex border-b border-white/10 mb-6 shrink-0">
+              <button
                 onClick={() => setActiveTab('upload')}
-                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'upload' ? 'border-b-2 border-black bg-gray-50' : 'text-gray-400 hover:text-black'}`}
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'upload' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 アップロード
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('history')}
-                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'history' ? 'border-b-2 border-black bg-gray-50' : 'text-gray-400 hover:text-black'}`}
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'history' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 履歴から選択
               </button>
@@ -182,10 +182,10 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
                 
                 <label
                   htmlFor={`file-input-${uniqueId}`}
-                  className={`w-40 h-40 border-2 border-dashed border-black rounded-lg flex flex-col items-center justify-center hover:bg-gray-50 transition-colors mb-6 group cursor-pointer ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={`w-40 h-40 border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center hover:bg-white/5 transition-colors mb-6 group cursor-pointer ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}
                 >
                   {isProcessing ? (
-                     <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin rounded-full"></div>
+                     <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent animate-spin rounded-full"></div>
                   ) : (
                     <>
                       <span className="text-4xl mb-2 group-hover:-translate-y-1 transition-transform">📂</span>
@@ -196,7 +196,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
                 
                 <button 
                   onClick={() => { onSelect(defaultImage); setIsOpen(false); }} 
-                  className="text-xs font-mono underline text-gray-400 hover:text-black"
+                  className="text-xs font-mono underline text-gray-400 hover:text-white"
                 >
                   デフォルトに戻す
                 </button>
@@ -209,7 +209,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
                    <div className="col-span-3 text-center py-8 text-gray-400 font-mono text-xs">履歴がありません</div>
                 )}
                 {history.map(img => (
-                  <div key={img.id} onClick={() => handleSelectFromHistory(img)} className="aspect-square border border-gray-200 relative group cursor-pointer hover:border-black rounded-md overflow-hidden">
+                  <div key={img.id} onClick={() => handleSelectFromHistory(img)} className="aspect-square border border-white/10 relative group cursor-pointer hover:border-purple-500/30 rounded-md overflow-hidden">
                     <img src={img.dataUrl} className="w-full h-full object-cover" />
                     <button 
                       onClick={(e) => handleDelete(e, img.id)}

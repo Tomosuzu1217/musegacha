@@ -29,18 +29,18 @@ export const HistoryViewer: React.FC = () => {
         >
           ← 一覧に戻る
         </button>
-        <div className="border border-black bg-white min-h-[50vh]">
-          <div className="p-8 border-b border-black bg-gray-50">
+        <div className="card-cinematic rounded-xl min-h-[50vh]">
+          <div className="p-8 border-b border-white/5 bg-white/5">
             <div className="flex justify-between items-start mb-4">
                <h2 className="text-2xl font-display font-bold leading-tight max-w-2xl">{selectedAnswer.questionText}</h2>
                <div className="text-right">
                   <div className="font-mono text-xs uppercase tracking-widest text-gray-500">{formatDate(selectedAnswer.createdAt)}</div>
-                  <div className="font-bold text-xs uppercase mt-1 px-2 py-0.5 bg-black text-white inline-block">{selectedAnswer.format}</div>
+                  <div className="font-bold text-xs uppercase mt-1 px-2 py-0.5 bg-purple-600/30 text-purple-300 border border-purple-500/30 inline-block">{selectedAnswer.format}</div>
                </div>
             </div>
           </div>
           <div className="p-8 md:p-12 prose prose-slate max-w-none prose-headings:font-display prose-p:font-body">
-            <pre className="whitespace-pre-wrap font-body text-base leading-relaxed text-black bg-transparent border-none p-0">
+            <pre className="whitespace-pre-wrap font-body text-base leading-relaxed text-gray-200 bg-transparent border-none p-0">
               {selectedAnswer.final}
             </pre>
           </div>
@@ -52,11 +52,11 @@ export const HistoryViewer: React.FC = () => {
   return (
     <div className="animate-in fade-in duration-500">
       {/* Sub-tab Toggle */}
-      <div className="flex gap-0 mb-6 border-b border-black">
+      <div className="flex gap-0 mb-6 border-b border-white/10">
         <button
           onClick={() => setSubTab('archive')}
           className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
-            subTab === 'archive' ? 'border-black text-black' : 'border-transparent text-gray-300 hover:text-gray-500'
+            subTab === 'archive' ? 'border-purple-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'
           }`}
         >
           Archive
@@ -64,7 +64,7 @@ export const HistoryViewer: React.FC = () => {
         <button
           onClick={() => setSubTab('activity')}
           className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
-            subTab === 'activity' ? 'border-black text-black' : 'border-transparent text-gray-300 hover:text-gray-500'
+            subTab === 'activity' ? 'border-purple-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'
           }`}
         >
           Activity
@@ -76,7 +76,7 @@ export const HistoryViewer: React.FC = () => {
       ) : (
       <>
       {answers.length === 0 ? (
-        <div className="py-24 text-center border border-black border-dashed">
+        <div className="py-24 text-center border border-white/10 border-dashed">
           <p className="font-mono text-gray-400">記録データなし</p>
         </div>
       ) : (
@@ -85,14 +85,14 @@ export const HistoryViewer: React.FC = () => {
             <div 
               key={ans.id}
               onClick={() => setSelectedAnswer(ans)}
-              className="border border-black p-6 hover:bg-black hover:text-white transition-all cursor-pointer group h-full flex flex-col justify-between"
+              className="card-cinematic rounded-xl p-6 hover:bg-white/5 hover:border-purple-500/30 hover-glow transition-all cursor-pointer group h-full flex flex-col justify-between"
             >
               <div>
                 <div className="flex justify-between items-center mb-4 opacity-50 text-[10px] font-mono uppercase">
                    <span>{formatDate(ans.createdAt)}</span>
                    <span>{ans.format}</span>
                 </div>
-                <h3 className="font-display font-bold text-lg mb-4 leading-snug line-clamp-3 group-hover:underline decoration-1 underline-offset-4">
+                <h3 className="font-display font-bold text-lg mb-4 leading-snug line-clamp-3 group-hover:underline decoration-purple-500 decoration-1 underline-offset-4">
                   {ans.questionText}
                 </h3>
               </div>

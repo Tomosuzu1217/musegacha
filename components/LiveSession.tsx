@@ -261,7 +261,7 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
                 {visualizerData.map((h, i) => (
                     <div 
                         key={i} 
-                        className="w-4 bg-white transition-all duration-75"
+                        className="w-4 bg-purple-400 transition-all duration-75"
                         style={{ height: `${h}%`, opacity: 0.8 }}
                     />
                 ))}
@@ -278,7 +278,7 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
             
             <button 
                 onClick={onSessionEnd}
-                className="mt-8 px-8 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors border-2 border-transparent hover:border-white"
+                className="mt-8 px-8 py-4 btn-neon font-bold uppercase tracking-widest transition-colors rounded-lg"
             >
                 End Session & Publish
             </button>

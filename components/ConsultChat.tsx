@@ -264,7 +264,7 @@ export const ConsultChat: React.FC = () => {
           </div>
           <button
             onClick={startNewSession}
-            className="px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg active:scale-95 transition-all"
+            className="px-4 py-2 btn-neon text-xs font-bold uppercase tracking-widest rounded-lg active:scale-95 transition-all"
           >
             + NEW
           </button>
@@ -273,7 +273,7 @@ export const ConsultChat: React.FC = () => {
         {/* Session List */}
         {sessions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 border-2 border-gray-200 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 border-2 border-white/10 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl opacity-30">?</span>
             </div>
             <p className="text-sm text-gray-400 font-mono mb-2">No consultations yet</p>
@@ -290,11 +290,11 @@ export const ConsultChat: React.FC = () => {
                 <button
                   key={session.id}
                   onClick={() => openSession(session)}
-                  className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-black transition-colors group"
+                  className="w-full text-left p-4 border border-white/10 rounded-xl glass-dark hover:border-purple-500/30 hover-glow transition-colors group"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800 truncate font-medium">{preview}</p>
+                      <p className="text-sm text-gray-200 truncate font-medium">{preview}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-[10px] font-mono text-gray-400">
                           {formatTime(session.updatedAt)}
@@ -303,7 +303,7 @@ export const ConsultChat: React.FC = () => {
                           {session.messages.length} msgs
                         </span>
                         {session.generatedQuestionIds.length > 0 && (
-                          <span className="text-[10px] font-mono text-green-600 font-bold">
+                          <span className="text-[10px] font-mono text-green-400 font-bold">
                             {session.generatedQuestionIds.length} Q generated
                           </span>
                         )}
@@ -311,7 +311,7 @@ export const ConsultChat: React.FC = () => {
                       {session.themes.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {session.themes.slice(0, 4).map((theme, i) => (
-                            <span key={i} className="text-[9px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full font-mono">
+                            <span key={i} className="text-[9px] px-2 py-0.5 chip-dark rounded-full font-mono">
                               {theme}
                             </span>
                           ))}
@@ -320,7 +320,7 @@ export const ConsultChat: React.FC = () => {
                     </div>
                     <button
                       onClick={(e) => handleDeleteSession(e, session.id)}
-                      className="text-gray-300 hover:text-red-500 transition-colors ml-2 p-1 opacity-0 group-hover:opacity-100"
+                      className="text-gray-600 hover:text-red-400 transition-colors ml-2 p-1 opacity-0 group-hover:opacity-100"
                       title="Delete"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,13 +336,13 @@ export const ConsultChat: React.FC = () => {
 
         {/* Core Insights */}
         {profile && sessions.length >= 2 && (
-          <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-8 pt-6 border-t border-white/5">
             <div className="flex items-center justify-between mb-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">CORE ANALYSIS</p>
               <button
                 onClick={handleAnalyzeCore}
                 disabled={isAnalyzing}
-                className="text-[10px] font-bold uppercase px-3 py-1.5 bg-black text-white rounded-full disabled:opacity-30 active:scale-95 transition-all"
+                className="text-[10px] font-bold uppercase px-3 py-1.5 btn-neon rounded-full disabled:opacity-30 active:scale-95 transition-all"
               >
                 {isAnalyzing ? '分析中...' : coreInsights ? '再分析' : '自分のコアを発見'}
               </button>
@@ -355,8 +355,8 @@ export const ConsultChat: React.FC = () => {
             {coreInsights ? (
               <div className="space-y-4">
                 {/* Narrative */}
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <p className="text-sm leading-relaxed text-gray-700">{coreInsights.narrative}</p>
+                <div className="p-4 card-cinematic rounded-xl">
+                  <p className="text-sm leading-relaxed text-gray-300">{coreInsights.narrative}</p>
                 </div>
 
                 {/* Core Values */}
@@ -364,7 +364,7 @@ export const ConsultChat: React.FC = () => {
                   <p className="text-[9px] font-bold font-mono text-gray-400 uppercase mb-2">Core Values</p>
                   <div className="flex flex-wrap gap-2">
                     {coreInsights.coreValues.map((v, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-black text-white text-xs font-bold rounded-full">{v}</span>
+                      <span key={i} className="px-3 py-1.5 bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold rounded-full">{v}</span>
                     ))}
                   </div>
                 </div>
@@ -375,10 +375,10 @@ export const ConsultChat: React.FC = () => {
                   <div className="space-y-1.5">
                     {coreInsights.patterns.map((p, i) => (
                       <div key={i} className="flex items-start gap-2">
-                        <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <span className="text-[8px] font-bold text-gray-500">{i + 1}</span>
                         </span>
-                        <p className="text-xs text-gray-600 leading-relaxed">{p}</p>
+                        <p className="text-xs text-gray-400 leading-relaxed">{p}</p>
                       </div>
                     ))}
                   </div>
@@ -391,7 +391,7 @@ export const ConsultChat: React.FC = () => {
                     {coreInsights.growthAreas.map((g, i) => (
                       <div key={i} className="flex items-start gap-2">
                         <span className="text-xs text-gray-400">+</span>
-                        <p className="text-xs text-gray-600 leading-relaxed">{g}</p>
+                        <p className="text-xs text-gray-400 leading-relaxed">{g}</p>
                       </div>
                     ))}
                   </div>
@@ -415,18 +415,18 @@ export const ConsultChat: React.FC = () => {
             .sort(([,a], [,b]) => b - a)
             .slice(0, 5);
           return (
-            <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="mt-6 pt-6 border-t border-white/5">
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">STATS</p>
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 card-cinematic rounded-xl">
                   <p className="text-lg font-bold font-display">{profile.totalConsultations}</p>
                   <p className="text-[9px] text-gray-400 font-mono uppercase">Consults</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 card-cinematic rounded-xl">
                   <p className="text-lg font-bold font-display">{profile.totalQuestionsGenerated}</p>
                   <p className="text-[9px] text-gray-400 font-mono uppercase">Questions</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 card-cinematic rounded-xl">
                   <p className="text-lg font-bold font-display">{profile.totalSessionsCompleted}</p>
                   <p className="text-[9px] text-gray-400 font-mono uppercase">Sessions</p>
                 </div>
@@ -437,9 +437,9 @@ export const ConsultChat: React.FC = () => {
                   <div className="space-y-1">
                     {topThemes.map(([theme, count]) => (
                       <div key={theme} className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-black rounded-full"
+                            className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
                             style={{ width: `${Math.min(100, (count / topThemes[0][1]) * 100)}%` }}
                           />
                         </div>
@@ -461,10 +461,10 @@ export const ConsultChat: React.FC = () => {
   return (
     <div className="flex flex-col h-[calc(100dvh-12rem)]">
       {/* Chat Header */}
-      <div className="flex items-center gap-3 pb-4 border-b border-gray-100 mb-4 flex-shrink-0">
+      <div className="flex items-center gap-3 pb-4 border-b border-white/5 mb-4 flex-shrink-0">
         <button
           onClick={handleBack}
-          className="p-3 -ml-1 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-3 -ml-1 hover:bg-white/10 rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -475,7 +475,7 @@ export const ConsultChat: React.FC = () => {
           {activeSession && activeSession.themes.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
               {activeSession.themes.slice(0, 3).map((theme, i) => (
-                <span key={i} className="text-[9px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full font-mono">
+                <span key={i} className="text-[9px] px-2 py-0.5 chip-dark rounded-full font-mono">
                   {theme}
                 </span>
               ))}
@@ -487,20 +487,20 @@ export const ConsultChat: React.FC = () => {
           <button
             onClick={handleManualGenerate}
             disabled={isProcessing || isGeneratingQuestions}
-            className="px-3 py-1.5 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-lg disabled:opacity-30 active:scale-95 transition-all"
+            className="px-3 py-1.5 btn-neon text-[10px] font-bold uppercase tracking-wider rounded-lg disabled:opacity-30 active:scale-95 transition-all"
           >
             {isGeneratingQuestions ? 'Generating...' : 'Generate Q'}
           </button>
         )}
         {generatedCount > 0 && (
-          <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full font-mono">
+          <span className="px-2 py-1 bg-green-900/30 text-green-400 border border-green-500/30 text-[10px] font-bold rounded-full font-mono">
             {generatedCount}Q
           </span>
         )}
       </div>
 
       {generateError && (
-        <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg mb-2">
+        <div className="px-3 py-2 bg-red-900/20 border border-red-500/30 rounded-lg mb-2">
           <p className="text-red-600 text-xs">{generateError}</p>
         </div>
       )}
@@ -524,8 +524,8 @@ export const ConsultChat: React.FC = () => {
             <div
               className={`max-w-[85%] px-4 py-3 rounded-2xl ${
                 msg.role === 'user'
-                  ? 'bg-black text-white rounded-br-sm'
-                  : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-bl-sm'
+                  ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-br-sm'
+                  : 'glass-dark text-gray-200 border border-white/10 rounded-bl-sm'
               }`}
             >
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
@@ -538,11 +538,11 @@ export const ConsultChat: React.FC = () => {
 
         {isProcessing && (
           <div className="flex justify-start">
-            <div className="bg-gray-50 border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm">
+            <div className="glass-dark border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm">
               <div className="flex gap-1.5">
-                <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
               {isGeneratingQuestions && (
                 <p className="text-[10px] text-gray-400 mt-2 font-mono">Generating questions...</p>
@@ -555,7 +555,7 @@ export const ConsultChat: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="flex-shrink-0 pt-3 border-t border-gray-100">
+      <div className="flex-shrink-0 pt-3 border-t border-white/5">
         <div className="flex gap-2 items-end">
           <textarea
             ref={inputRef}
@@ -564,14 +564,14 @@ export const ConsultChat: React.FC = () => {
             onKeyDown={handleKeyDown}
             placeholder="Type your thoughts..."
             rows={1}
-            className="flex-1 resize-none border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+            className="flex-1 resize-none input-dark rounded-xl px-4 py-3 text-sm transition-colors"
             style={{ maxHeight: '120px', minHeight: '44px' }}
             disabled={isProcessing}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isProcessing}
-            className="p-3 bg-black text-white rounded-xl disabled:opacity-20 active:scale-95 transition-all flex-shrink-0"
+            className="p-3 btn-neon rounded-xl disabled:opacity-20 active:scale-95 transition-all flex-shrink-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5M5 12l7-7 7 7" />

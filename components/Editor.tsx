@@ -419,11 +419,11 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white relative">
+    <div className="flex flex-col h-full w-full bg-[#0a0a14] relative">
 
       {/* Condensed Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black bg-white z-50 shrink-0">
-        <div className="font-mono text-[10px] uppercase text-gray-500 truncate max-w-[60%]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 glass-dark z-50 shrink-0">
+        <div className="font-mono text-[10px] uppercase text-gray-400 truncate max-w-[60%]">
           {question.text}
         </div>
 
@@ -433,18 +433,18 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               onClick={toggleRecording}
               className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${isRecording
                 ? 'bg-red-600 border-red-600 animate-pulse'
-                : 'bg-white text-black border-black'
+                : 'bg-white/10 text-white border-white/20'
                 }`}
             >
               <div className={`w-3 h-3 rounded-full ${isRecording ? 'bg-white' : 'bg-red-600'}`}></div>
             </button>
           )}
-          <button onClick={onClose} className="px-3 py-1 bg-black text-white text-xs font-bold uppercase rounded-sm">Close</button>
+          <button onClick={onClose} className="px-3 py-1 bg-white/10 text-white border border-white/10 hover:bg-white/20 text-xs font-bold uppercase rounded-sm">Close</button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-gray-50">
+      <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-transparent">
 
         {mode === 'setup' && (
           <div className="absolute inset-0 flex flex-col overflow-hidden">
@@ -460,13 +460,13 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               }}
             />
             {/* オーバーレイ */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/80" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14]/80 via-[#0a0a14]/60 to-[#0a0a14]/80" />
 
             {/* コンテンツ */}
             <div className="relative z-10 flex-1 overflow-y-auto pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-6 text-center">
                 <h3 className="font-display text-2xl font-bold uppercase mb-2">ステージ選択</h3>
-                <p className="font-mono text-xs text-gray-600">
+                <p className="font-mono text-xs text-gray-400">
                   セッションの背景テーマを選んでください
                 </p>
               </div>
@@ -479,13 +479,13 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                       key={theme.id}
                       onClick={() => handleStageThemeChange(theme)}
                       className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${selectedStageTheme.id === theme.id
-                        ? 'border-black shadow-xl scale-105 bg-white/90'
-                        : 'border-white/50 hover:border-gray-300 bg-white/70 hover:bg-white/80'
+                        ? 'border-purple-500 shadow-xl scale-105 glass-dark glow-purple'
+                        : 'border-white/10 hover:border-white/20 glass-dark hover-glow'
                         }`}
                     >
                       {/* プレビュー */}
                       <div
-                        className="w-full aspect-video rounded-lg border border-gray-200 overflow-hidden relative"
+                        className="w-full aspect-video rounded-lg border border-white/10 overflow-hidden relative"
                         style={{ background: theme.preview }}
                       >
                         {/* ステージシルエット */}
@@ -495,13 +495,13 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                         </div>
                         {/* 選択マーク */}
                         {selectedStageTheme.id === theme.id && (
-                          <div className="absolute top-1 right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                          <div className="absolute top-1 right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs">✓</span>
                           </div>
                         )}
                       </div>
                       {/* テーマ名 */}
-                      <span className={`text-xs font-medium mt-2 truncate w-full text-center ${selectedStageTheme.id === theme.id ? 'text-black font-bold' : 'text-gray-600'
+                      <span className={`text-xs font-medium mt-2 truncate w-full text-center ${selectedStageTheme.id === theme.id ? 'text-white font-bold' : 'text-gray-400'
                         }`}>
                         {theme.name}
                       </span>
@@ -510,7 +510,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                 </div>
 
                 {/* プレビュー表示エリア */}
-                <div className="mt-6 p-4 rounded-2xl bg-white/80 border border-gray-200 shadow-lg backdrop-blur-sm">
+                <div className="mt-6 p-4 rounded-2xl card-cinematic shadow-lg">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">プレビュー</div>
                   <div
                     className="w-full aspect-video rounded-xl overflow-hidden relative shadow-inner"
@@ -550,7 +550,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                   </div>
                 </div>
 
-                <p className="text-center text-xs text-gray-500 mt-4">
+                <p className="text-center text-xs text-gray-400 mt-4">
                   ※ キャラクターは次の画面で選択できます
                 </p>
               </div>
@@ -558,7 +558,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               <div className="p-6 mt-auto">
                 <button
                   onClick={() => setMode('debate')}
-                  className="w-full py-5 bg-black text-white font-display font-bold text-lg uppercase tracking-widest shadow-lg rounded-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-5 btn-neon font-display font-bold text-lg uppercase tracking-widest shadow-lg rounded-lg active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <span>次へ</span>
                   <span className="text-xl">→</span>
@@ -581,14 +581,14 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
         )}
 
         {mode === 'article' && (
-          <div className="flex-1 overflow-y-auto bg-gray-100 flex flex-col">
+          <div className="flex-1 overflow-y-auto bg-transparent flex flex-col">
             {isGenerating ? (
               <div className="h-full flex flex-col items-center justify-center px-6">
                 {/* 進捗円形表示 */}
                 <div className="relative w-24 h-24 mb-6">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                     <path
-                      className="text-gray-200"
+                      className="text-white/10"
                       strokeDasharray="100, 100"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none"
@@ -596,7 +596,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                       strokeWidth="2.5"
                     />
                     <path
-                      className="text-black transition-all duration-500 ease-out"
+                      className="text-purple-500 transition-all duration-500 ease-out"
                       strokeDasharray={`${generationProgress}, 100`}
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none"
@@ -617,15 +617,15 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
 
                 {/* 段階表示 */}
                 <div className="flex items-center gap-2 mt-4">
-                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 20 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-8 h-0.5 ${generationProgress >= 50 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 50 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-8 h-0.5 ${generationProgress >= 80 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 80 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-8 h-0.5 ${generationProgress >= 100 ? 'bg-black' : 'bg-gray-300'}`} />
-                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 100 ? 'bg-black' : 'bg-gray-300'}`} />
+                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 20 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-8 h-0.5 ${generationProgress >= 50 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 50 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-8 h-0.5 ${generationProgress >= 80 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 80 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-8 h-0.5 ${generationProgress >= 100 ? 'bg-purple-500' : 'bg-white/10'}`} />
+                  <div className={`w-3 h-3 rounded-full ${generationProgress >= 100 ? 'bg-purple-500' : 'bg-white/10'}`} />
                 </div>
-                <div className="flex gap-6 mt-2 text-[9px] uppercase font-bold text-gray-500">
+                <div className="flex gap-6 mt-2 text-[9px] uppercase font-bold text-gray-400">
                   <span>分析</span>
                   <span>生成</span>
                   <span>感想</span>
@@ -636,13 +636,13 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               <div className="flex flex-col items-center p-4 min-h-full">
 
                 {/* Tab Bar */}
-                <div className="w-full max-w-sm mb-4 flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="w-full max-w-sm mb-4 flex glass-dark rounded-lg shadow-sm border border-white/10 overflow-hidden">
                   <button
                     onClick={() => handleTabSwitch('newspaper')}
                     className={`flex-1 py-3 text-sm font-bold transition-colors ${
                       articleTab === 'newspaper'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-transparent text-gray-400 hover:bg-white/10'
                     }`}
                   >
                     新聞カード
@@ -651,8 +651,8 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                     onClick={() => handleTabSwitch('note')}
                     className={`flex-1 py-3 text-sm font-bold transition-colors ${
                       articleTab === 'note'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-transparent text-gray-400 hover:bg-white/10'
                     }`}
                   >
                     note記事
@@ -663,7 +663,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                 {articleTab === 'newspaper' && (
                   <>
                     {/* Customization Controls */}
-                    <div className="w-full max-w-sm mb-6 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                    <div className="w-full max-w-sm mb-6 card-cinematic p-3 rounded-lg shadow-sm">
                       <div className="mb-3">
                         <label className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Background</label>
                         <div className="flex gap-2 overflow-x-auto no-scrollbar">
@@ -671,7 +671,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                             <button
                               key={theme.id}
                               onClick={() => handleThemeChange(theme)}
-                              className={`w-8 h-8 rounded-full border-2 flex-shrink-0 ${theme.bg} ${selectedTheme.id === theme.id ? 'border-black ring-1 ring-black' : 'border-transparent'}`}
+                              className={`w-8 h-8 rounded-full border-2 flex-shrink-0 ${theme.bg} ${selectedTheme.id === theme.id ? 'border-purple-500 ring-1 ring-purple-500' : 'border-transparent'}`}
                             />
                           ))}
                         </div>
@@ -683,7 +683,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                             <button
                               key={font.id}
                               onClick={() => handleFontChange(font)}
-                              className={`px-2 py-1 text-[10px] border rounded ${selectedFont.id === font.id ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
+                              className={`px-2 py-1 text-[10px] border rounded ${selectedFont.id === font.id ? 'bg-purple-500 text-white border-purple-500' : 'bg-white/5 text-gray-400 border-white/10'}`}
                             >
                               {font.name}
                             </button>
@@ -756,7 +756,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                     <button
                       onClick={handleQED}
                       disabled={isSavingImage}
-                      className="w-full max-w-sm py-5 bg-black text-white font-display font-bold text-2xl uppercase tracking-widest shadow-xl rounded-lg active:scale-[0.98] transition-all hover:bg-gray-900 disabled:opacity-50"
+                      className="w-full max-w-sm py-5 btn-neon font-display font-bold text-2xl uppercase tracking-widest shadow-xl rounded-lg active:scale-[0.98] transition-all disabled:opacity-50"
                     >
                       {isSavingImage ? 'Saving...' : 'Save Image'}
                     </button>
@@ -768,8 +768,8 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                   <div className="w-full max-w-2xl pb-8">
                     {isGeneratingNote ? (
                       <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-12 h-12 border-4 border-gray-300 border-t-black rounded-full animate-spin mb-4" />
-                        <p className="font-display text-sm font-bold uppercase tracking-widest text-gray-600">
+                        <div className="w-12 h-12 border-4 border-white/10 border-t-purple-500 rounded-full animate-spin mb-4" />
+                        <p className="font-display text-sm font-bold uppercase tracking-widest text-gray-400">
                           note記事を生成中...
                         </p>
                         <p className="text-xs text-gray-400 mt-2">
@@ -782,34 +782,34 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                         <button
                           onClick={() => { setNoteArticleData(null); handleGenerateNoteArticle(); }}
                           disabled={isGeneratingNote}
-                          className="px-6 py-2 bg-black text-white text-sm font-bold rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+                          className="px-6 py-2 btn-neon text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
                         >
                           {isGeneratingNote ? '生成中...' : '再試行'}
                         </button>
                       </div>
                     ) : noteArticleData ? (
                       <>
-                        <div className={`bg-white rounded-lg shadow-lg p-6 md:p-10 ${selectedFont.class}`}>
+                        <div className={`card-cinematic rounded-lg shadow-lg p-6 md:p-10 ${selectedFont.class}`}>
                           {/* Article Title */}
-                          <h1 className="text-xl md:text-2xl font-bold leading-tight mb-6 pb-4 border-b border-gray-200">
+                          <h1 className="text-xl md:text-2xl font-bold leading-tight mb-6 pb-4 border-b border-white/10 text-white">
                             {noteArticleData.title}
                           </h1>
 
                           {/* Sections */}
                           {noteArticleData.sections.map((section, index) => (
                             <div key={index} className="mb-8">
-                              <h2 className="text-base md:text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
-                                <span className="w-1 h-5 bg-black rounded-full inline-block flex-shrink-0" />
+                              <h2 className="text-base md:text-lg font-bold mb-3 text-white flex items-center gap-2">
+                                <span className="w-1 h-5 bg-purple-500 rounded-full inline-block flex-shrink-0" />
                                 {section.title}
                               </h2>
-                              <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:text-gray-700 prose-p:mb-3 prose-strong:text-black prose-strong:font-bold text-sm leading-7 text-gray-700">
+                              <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:text-gray-300 prose-p:mb-3 prose-strong:text-white prose-strong:font-bold text-sm leading-7 text-gray-300">
                                 <Markdown>{section.body}</Markdown>
                               </div>
                             </div>
                           ))}
 
                           {/* Footer */}
-                          <div className="mt-8 pt-4 border-t border-gray-200 flex items-center justify-between">
+                          <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
                             <span className="font-mono text-[10px] uppercase text-gray-400">
                               MUSE GACHA - note記事
                             </span>
@@ -825,7 +825,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                           className={`w-full mt-6 py-4 font-display font-bold text-lg uppercase tracking-widest shadow-xl rounded-lg active:scale-[0.98] transition-all ${
                             copySuccess
                               ? 'bg-green-600 text-white'
-                              : 'bg-black text-white hover:bg-gray-900'
+                              : 'btn-neon'
                           }`}
                         >
                           {copySuccess ? 'Copied!' : 'Copy Text'}

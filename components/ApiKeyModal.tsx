@@ -116,8 +116,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
   if (isSelecting) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-white border border-black w-full max-w-lg p-8 animate-in fade-in zoom-in duration-200 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+      <div className="card-cinematic rounded-xl w-full max-w-lg p-8 animate-in fade-in zoom-in duration-200 shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold font-display uppercase tracking-tight mb-4">システム設定</h2>
 
         <div className="space-y-6">
@@ -133,11 +133,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
                 {keyList.map((keyInfo) => (
                   <div
                     key={keyInfo.id}
-                    className={`flex items-center justify-between p-2 border ${keyInfo.isActive
-                        ? 'border-green-500 bg-green-50'
+                    className={`flex items-center justify-between p-2 border rounded-lg ${keyInfo.isActive
+                        ? 'border-green-500/50 bg-green-900/20'
                         : keyInfo.isRateLimited
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-200'
+                          ? 'border-red-500/50 bg-red-900/20'
+                          : 'border-white/10 bg-white/5'
                       }`}
                   >
                     <div className="flex items-center gap-2">
@@ -145,11 +145,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
                           ? 'bg-green-500'
                           : keyInfo.isRateLimited
                             ? 'bg-red-400'
-                            : 'bg-gray-300'
+                            : 'bg-gray-600'
                         }`} />
                       <span className="font-mono text-sm">{keyInfo.maskedKey}</span>
                       {keyInfo.isActive && (
-                        <span className="text-[10px] text-green-600 font-bold">使用中</span>
+                        <span className="text-[10px] text-green-400 font-bold">使用中</span>
                       )}
                       {keyInfo.isRateLimited && (
                         <span className="text-[10px] text-red-500">制限中</span>
@@ -179,7 +179,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
                 value={newApiKey}
                 onChange={(e) => setNewApiKey(e.target.value)}
                 placeholder="AIzaSy... (新しいキーを追加)"
-                className="flex-1 border border-black p-3 font-mono text-sm outline-none focus:bg-gray-100 transition-colors"
+                className="flex-1 input-dark p-3 font-mono text-sm rounded-lg"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     handleAddKey();
@@ -189,7 +189,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 onClick={handleAddKey}
                 disabled={!newApiKey.trim()}
-                className="px-4 py-2 bg-gray-100 border border-black font-bold text-xs hover:bg-gray-200 disabled:opacity-50"
+                className="px-4 py-2 bg-white/10 border border-white/10 text-white font-bold text-xs hover:bg-white/20 disabled:opacity-50 rounded-lg"
               >
                 追加
               </button>
@@ -207,9 +207,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('auto')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border transition-colors ${ttsMode === 'auto'
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white text-black border-gray-300 hover:border-black'
+                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'auto'
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
                 自動
@@ -217,9 +217,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('webspeech')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border transition-colors ${ttsMode === 'webspeech'
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white text-black border-gray-300 hover:border-black'
+                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'webspeech'
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
                 ブラウザ音声
@@ -227,9 +227,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('gemini')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border transition-colors ${ttsMode === 'gemini'
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white text-black border-gray-300 hover:border-black'
+                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'gemini'
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
                 Gemini TTS
@@ -243,7 +243,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+          <div className="flex justify-between items-center pt-4 border-t border-white/5">
             {isPlatformEnv ? (
               <button
                 onClick={handlePlatformSelect}
@@ -267,7 +267,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               {canDismiss && (
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 font-mono text-xs uppercase tracking-widest hover:underline"
+                  className="px-4 py-2 font-mono text-xs uppercase tracking-widest hover:underline text-gray-400 hover:text-white"
                 >
                   キャンセル
                 </button>
@@ -275,7 +275,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 onClick={handleSave}
                 disabled={!apiKeyRotation.hasValidKey() && !newApiKey.trim()}
-                className="px-6 py-2 bg-black text-white font-bold uppercase text-xs tracking-widest hover:bg-gray-800 disabled:opacity-50"
+                className="px-6 py-2 btn-neon font-bold uppercase text-xs tracking-widest rounded-lg disabled:opacity-50"
               >
                 設定を保存
               </button>

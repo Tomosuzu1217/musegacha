@@ -152,7 +152,7 @@ const App: React.FC = () => {
           <div className="fixed top-16 right-4 z-50">
             <button
               onClick={() => setIsApiKeyModalOpen(true)}
-              className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg text-lg font-bold"
+              className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg glow-red text-lg font-bold"
             >
               !
             </button>
@@ -169,14 +169,14 @@ const App: React.FC = () => {
                   <div className="mb-4">
                     <button
                       onClick={() => setShowFilters(!showFilters)}
-                      className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 border border-gray-200 px-3 py-2 rounded-full"
+                      className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 border border-white/10 px-3 py-2 rounded-full glass-dark hover-glow transition-all"
                     >
-                      <span className={`w-2 h-2 rounded-full ${hasActiveFilters ? 'bg-black' : 'bg-gray-300'}`}></span>
+                      <span className={`w-2 h-2 rounded-full ${hasActiveFilters ? 'bg-purple-500 shadow-[0_0_6px_rgba(139,92,246,0.5)]' : 'bg-gray-600'}`}></span>
                       {showFilters ? 'Hide Filters' : 'Filter Options'}
                     </button>
 
                     {showFilters && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4 animate-in slide-in-from-top-2">
+                      <div className="mt-4 p-4 card-cinematic rounded-xl space-y-4 animate-in slide-in-from-top-2">
                         <div>
                           <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">Difficulty</label>
                           <div className="flex gap-2">
@@ -184,7 +184,7 @@ const App: React.FC = () => {
                               <button
                                 key={d}
                                 onClick={() => setFilters(prev => ({ ...prev, difficulty: prev.difficulty === d ? null : d as any }))}
-                                className={`flex-1 py-2 text-[10px] uppercase font-bold border ${filters.difficulty === d ? 'bg-black text-white border-black' : 'bg-white border-gray-300 text-gray-500'}`}
+                                className={`flex-1 py-2 text-[10px] uppercase font-bold border rounded ${filters.difficulty === d ? 'bg-purple-600 text-white border-purple-600 glow-purple' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                               >
                                 {d}
                               </button>
@@ -199,7 +199,7 @@ const App: React.FC = () => {
                               <button
                                 key={t}
                                 onClick={() => setFilters(prev => ({ ...prev, tag: prev.tag === t ? null : t }))}
-                                className={`px-3 py-1 text-[10px] uppercase font-bold border rounded-full ${filters.tag === t ? 'bg-black text-white border-black' : 'bg-white border-gray-300 text-gray-500'}`}
+                                className={`px-3 py-1 text-[10px] uppercase font-bold border rounded-full ${filters.tag === t ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                               >
                                 {t}
                               </button>
@@ -208,7 +208,7 @@ const App: React.FC = () => {
                         </div>
 
                         <div className="pt-2 text-right">
-                          <button onClick={clearFilters} className="text-[10px] font-bold text-red-500 underline">RESET ALL</button>
+                          <button onClick={clearFilters} className="text-[10px] font-bold text-red-400 underline">RESET ALL</button>
                         </div>
                       </div>
                     )}
@@ -226,17 +226,17 @@ const App: React.FC = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col gap-3 w-full mt-auto bg-white/50 backdrop-blur-sm pt-4">
+                      <div className="flex flex-col gap-3 w-full mt-auto backdrop-blur-sm pt-4">
                         <button
                           onClick={startWriting}
-                          className="w-full py-4 bg-black text-white font-display font-bold text-lg uppercase tracking-widest hover:bg-gray-900 shadow-xl active:scale-[0.98] transition-all rounded-lg"
+                          className="w-full py-4 btn-neon font-display font-bold text-lg uppercase tracking-widest active:scale-[0.98] transition-all rounded-lg"
                         >
                           Start Session
                         </button>
                         <button
                           onClick={spinGacha}
                           disabled={isSpinning}
-                          className="w-full py-3 bg-white text-gray-500 border border-gray-200 font-mono text-xs uppercase tracking-widest hover:bg-gray-50 active:scale-[0.98] transition-all rounded-lg disabled:opacity-50"
+                          className="w-full py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 active:scale-[0.98] transition-all rounded-lg disabled:opacity-50"
                         >
                           Skip / Next
                         </button>
@@ -245,18 +245,18 @@ const App: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center flex-1 py-12">
                       {noQuestionsAvailable ? (
-                        <div className="border border-black p-8 bg-yellow-50 rounded-lg text-center w-full">
-                          <p className="font-bold uppercase mb-2 text-xl font-display">No Matches</p>
-                          <button onClick={clearFilters} className="text-xs font-bold underline p-2">
+                        <div className="border border-amber-500/30 p-8 bg-amber-900/20 rounded-xl card-cinematic text-center w-full">
+                          <p className="font-bold uppercase mb-2 text-xl font-display text-white">No Matches</p>
+                          <button onClick={clearFilters} className="text-xs font-bold underline p-2 text-amber-400">
                             Reset Filters
                           </button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center w-full">
-                          <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center mb-6 animate-[spin_12s_linear_infinite]">
-                            <span className="font-display font-bold text-3xl">?</span>
+                          <div className="w-20 h-20 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-6 animate-[spin_12s_linear_infinite] shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                            <span className="font-display font-bold text-3xl text-purple-300">?</span>
                           </div>
-                          <h2 className="text-4xl font-bold font-display tracking-tighter mb-4 text-center">
+                          <h2 className="text-4xl font-bold font-display tracking-tighter mb-4 text-center gradient-text-neon">
                             MUSE<br />GACHA
                           </h2>
                           <p className="font-mono text-xs text-gray-500 mb-8 text-center max-w-[200px]">
@@ -265,7 +265,7 @@ const App: React.FC = () => {
                           <button
                             onClick={spinGacha}
                             disabled={isSpinning}
-                            className="w-full max-w-xs py-5 bg-black text-white text-lg font-bold font-display uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all disabled:opacity-50"
+                            className="w-full max-w-xs py-5 btn-neon text-lg font-bold font-display uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all disabled:opacity-50"
                           >
                             SPIN
                           </button>
@@ -277,7 +277,7 @@ const App: React.FC = () => {
               </div>
             ) : (
               // Editor takes full screen (z-[60] to cover bottom nav z-50)
-              <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+              <div className="fixed inset-0 z-[60] bg-[#0a0a14] flex flex-col">
                 <Editor question={currentQuestion} onClose={handleEditorClose} />
               </div>
             )}

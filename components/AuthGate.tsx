@@ -48,33 +48,33 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
   if (authState === 'loading') {
     return (
-      <div className="min-h-[100dvh] bg-white flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center mb-4 animate-[spin_2s_linear_infinite]">
-          <span className="font-display font-bold text-xl">?</span>
+      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-4 animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+          <span className="font-display font-bold text-xl text-purple-300">?</span>
         </div>
-        <p className="font-mono text-xs text-gray-400 uppercase">Loading...</p>
+        <p className="font-mono text-xs text-gray-500 uppercase">Loading...</p>
       </div>
     );
   }
 
   if (authState === 'migrating') {
     return (
-      <div className="min-h-[100dvh] bg-white flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center mb-4 animate-pulse">
-          <span className="font-display font-bold text-xl">M</span>
+      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+          <span className="font-display font-bold text-xl text-purple-300">M</span>
         </div>
-        <p className="font-mono text-xs text-gray-400 uppercase">Syncing data...</p>
+        <p className="font-mono text-xs text-gray-500 uppercase">Syncing data...</p>
       </div>
     );
   }
 
   if (authState === 'signed-out') {
     return (
-      <div className="min-h-[100dvh] bg-white flex flex-col items-center justify-center px-6">
-        <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center mb-6">
-          <span className="font-display font-bold text-3xl">?</span>
+      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center px-6">
+        <div className="w-20 h-20 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+          <span className="font-display font-bold text-3xl text-purple-300">?</span>
         </div>
-        <h1 className="text-4xl font-bold font-display tracking-tighter mb-2 text-center">
+        <h1 className="text-4xl font-bold font-display tracking-tighter mb-2 text-center gradient-text-neon">
           MUSE<br />GACHA
         </h1>
         <p className="font-mono text-xs text-gray-500 mb-8 text-center max-w-[250px]">
@@ -83,7 +83,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
         <button
           onClick={handleSignIn}
-          className="w-full max-w-xs py-4 bg-black text-white font-display font-bold text-sm uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3"
+          className="w-full max-w-xs py-4 btn-neon font-display font-bold text-sm uppercase tracking-widest rounded-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -95,7 +95,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
         </button>
 
         {error && (
-          <p className="mt-4 text-red-600 text-xs text-center">{error}</p>
+          <p className="mt-4 text-red-400 text-xs text-center">{error}</p>
         )}
 
         <p className="mt-12 font-mono text-[10px] text-gray-300 text-center">

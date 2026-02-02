@@ -239,13 +239,13 @@ export const QuestionManager: React.FC = () => {
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       
       {/* Tab Switcher */}
-      <div className="flex w-full border-b border-gray-200 overflow-x-auto no-scrollbar snap-x">
+      <div className="flex w-full border-b border-white/10 overflow-x-auto no-scrollbar snap-x">
         {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
               className={`flex-none px-6 py-3 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap snap-start ${
-                activeTab === t.id ? 'border-black text-black' : 'border-transparent text-gray-400'
+                activeTab === t.id ? 'border-purple-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
               }`}
             >
               {t.label}
@@ -255,7 +255,7 @@ export const QuestionManager: React.FC = () => {
 
       <div className="px-1">
       {activeTab === 'manual' && (
-        <div className="bg-white border border-black p-6 rounded-lg shadow-sm">
+        <div className="card-cinematic p-6 rounded-xl">
           <form onSubmit={handleManualAdd} className="space-y-4">
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider mb-2">質問 (Question)</label>
@@ -265,7 +265,7 @@ export const QuestionManager: React.FC = () => {
                 maxLength={500}
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
-                className="w-full bg-white border border-gray-200 p-3 outline-none focus:border-black rounded-sm text-black"
+                className="w-full input-dark p-3 outline-none rounded-sm"
                 placeholder="質問を入力してください..."
               />
             </div>
@@ -277,7 +277,7 @@ export const QuestionManager: React.FC = () => {
                   type="text"
                   value={newSource}
                   onChange={(e) => setNewSource(e.target.value)}
-                  className="w-full bg-white border border-gray-200 p-2 text-sm rounded-sm text-black"
+                  className="w-full input-dark p-2 text-sm rounded-sm"
                   placeholder="例: 自己内省, 本のタイトル"
                 />
               </div>
@@ -286,7 +286,7 @@ export const QuestionManager: React.FC = () => {
                 <select
                   value={newDifficulty}
                   onChange={(e) => setNewDifficulty(e.target.value as Difficulty)}
-                  className="w-full bg-white border border-gray-200 p-2 text-sm rounded-sm text-black"
+                  className="w-full input-dark p-2 text-sm rounded-sm"
                 >
                   <option value="light">軽い (Light)</option>
                   <option value="normal">普通 (Normal)</option>
@@ -305,8 +305,8 @@ export const QuestionManager: React.FC = () => {
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-1 text-[9px] uppercase font-bold border rounded-full transition-all ${
                       newTags.includes(tag)
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-gray-400 border-gray-200'
+                        ? 'bg-purple-600/30 text-purple-300 border-purple-500/50'
+                        : 'chip-dark'
                   }`}
                   >
                     {tag}
@@ -317,7 +317,7 @@ export const QuestionManager: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest rounded-lg shadow-md active:scale-95 transition-all"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg active:scale-95 transition-all"
             >
               質問を追加
             </button>
@@ -326,7 +326,7 @@ export const QuestionManager: React.FC = () => {
       )}
 
       {activeTab === 'ai' && (
-        <div className="border border-black p-6 bg-gray-50 rounded-lg shadow-sm">
+        <div className="card-cinematic p-6 rounded-xl">
           <div className="mb-4">
             <h2 className="text-lg font-bold font-display uppercase">Generate by AI</h2>
             <p className="text-xs text-gray-500">トピックを入力して5つの質問を生成します。</p>
@@ -338,14 +338,14 @@ export const QuestionManager: React.FC = () => {
               required
               value={aiTopic}
               onChange={(e) => setAiTopic(e.target.value)}
-              className="w-full bg-white border border-gray-300 p-3 rounded-sm text-black"
+              className="w-full input-dark p-3 rounded-sm"
               placeholder="トピック (例: リモートワークの課題)"
             />
             
             <button
               type="submit"
               disabled={isAiGenerating}
-              className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
             >
               {isAiGenerating ? '生成中...' : '生成する'}
             </button>
@@ -355,7 +355,7 @@ export const QuestionManager: React.FC = () => {
       )}
 
       {activeTab === 'url' && (
-        <div className="border border-black p-6 bg-gray-50 rounded-lg shadow-sm">
+        <div className="card-cinematic p-6 rounded-xl">
           <div className="mb-4">
             <h2 className="text-lg font-bold font-display uppercase">Import from URL</h2>
             <p className="text-xs text-gray-500">記事のURLから質問を抽出・生成します。</p>
@@ -367,14 +367,14 @@ export const QuestionManager: React.FC = () => {
               required
               value={targetUrl}
               onChange={(e) => setTargetUrl(e.target.value)}
-              className="w-full bg-white border border-gray-300 p-3 rounded-sm text-black"
+              className="w-full input-dark p-3 rounded-sm"
               placeholder="https://example.com/article (例: ブログ記事のURL)"
             />
             
             <button
               type="submit"
               disabled={isUrlExtracting}
-              className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
             >
               {isUrlExtracting ? '解析中...' : '抽出する'}
             </button>
@@ -386,9 +386,9 @@ export const QuestionManager: React.FC = () => {
       {activeTab === 'personas' && (
           <div className="space-y-8">
                {/* 1. CASTING SECTION */}
-               <div className="p-6 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+               <div className="card-cinematic border border-white/10 rounded-xl p-6">
                    <h3 className="font-display font-bold text-xl mb-4 flex items-center gap-2">
-                       <span className="bg-black text-white px-2 text-sm py-0.5">ROLE</span>
+                       <span className="bg-purple-600/30 text-purple-300 border border-purple-500/30 px-2 text-sm py-0.5">ROLE</span>
                        配役設定 (CASTING)
                    </h3>
                    <div className="space-y-4">
@@ -399,7 +399,7 @@ export const QuestionManager: React.FC = () => {
                            <select 
                              value={personaConfig.moderatorId}
                              onChange={e => setPersonaConfig(prev => ({...prev, moderatorId: e.target.value}))}
-                             className="w-full p-3 bg-white border border-gray-300 rounded-lg text-black font-bold focus:border-black outline-none"
+                             className="w-full p-3 input-dark rounded-lg font-bold outline-none"
                            >
                                {characters.map(c => (
                                    <option key={c.id} value={c.id}>{c.name}</option>
@@ -410,10 +410,10 @@ export const QuestionManager: React.FC = () => {
                            <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-gray-500">
                                コメンテーター (GUEST)
                            </label>
-                           <select 
+                           <select
                              value={personaConfig.commentatorId}
                              onChange={e => setPersonaConfig(prev => ({...prev, commentatorId: e.target.value}))}
-                             className="w-full p-3 bg-white border border-gray-300 rounded-lg text-black font-bold focus:border-black outline-none"
+                             className="w-full p-3 input-dark rounded-lg font-bold outline-none"
                            >
                                {characters.map(c => (
                                    <option key={c.id} value={c.id}>{c.name}</option>
@@ -423,26 +423,26 @@ export const QuestionManager: React.FC = () => {
                    </div>
                    <button 
                      onClick={handleSaveConfig}
-                     className="mt-6 w-full py-3 bg-black text-white font-bold uppercase tracking-widest rounded-lg hover:bg-gray-800 transition-colors"
+                     className="mt-6 w-full py-3 btn-neon font-bold uppercase tracking-widest rounded-lg transition-colors"
                    >
                      配役を保存
                    </button>
                </div>
 
                {/* 2. LIBRARY SECTION */}
-               <div className="border-t border-gray-200 pt-8">
+               <div className="border-t border-white/5 pt-8">
                    <div className="flex justify-between items-end mb-6">
                        <h3 className="font-display font-bold text-xl uppercase tracking-tight">キャラクターリスト</h3>
                        <button 
                          onClick={() => startEditCharacter()}
-                         className="text-xs font-bold uppercase bg-black text-white px-4 py-2 rounded-full hover:scale-105 transition-transform"
+                         className="text-xs font-bold uppercase btn-neon px-4 py-2 rounded-full hover:scale-105 transition-transform"
                        >
                          + 新規作成
                        </button>
                    </div>
 
                    {editingChar ? (
-                       <div className="bg-white border border-gray-200 p-6 rounded-xl animate-in fade-in slide-in-from-bottom-4">
+                       <div className="card-cinematic p-6 rounded-xl animate-in fade-in slide-in-from-bottom-4">
                            <div className="flex justify-between items-center mb-6">
                                <h4 className="font-bold text-lg">{isEditingNew ? '新規キャラクター作成' : 'キャラクター編集'}</h4>
                                <button onClick={() => setEditingChar(null)} className="text-xs underline text-gray-500">キャンセル</button>
@@ -465,7 +465,7 @@ export const QuestionManager: React.FC = () => {
                                          type="text" 
                                          value={editingChar.name}
                                          onChange={e => setEditingChar({...editingChar, name: e.target.value})}
-                                         className="w-full border border-gray-300 p-2 rounded-md bg-white text-black"
+                                         className="w-full input-dark p-2 rounded-md"
                                          placeholder="例: ソクラテス"
                                        />
                                    </div>
@@ -474,7 +474,7 @@ export const QuestionManager: React.FC = () => {
                                        <select
                                          value={editingChar.voiceName}
                                          onChange={e => setEditingChar({...editingChar, voiceName: e.target.value})}
-                                         className="w-full border border-gray-300 p-2 rounded-md bg-white text-black text-xs"
+                                         className="w-full input-dark p-2 rounded-md text-xs"
                                        >
                                            {VOICE_OPTIONS.map(v => (
                                              <option key={v.value} value={v.value}>{v.label}</option>
@@ -498,7 +498,7 @@ export const QuestionManager: React.FC = () => {
                                       step="0.1"
                                       value={editingChar.pitch || 1.0}
                                       onChange={(e) => setEditingChar({...editingChar, pitch: parseFloat(e.target.value)})}
-                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                    />
                                    <div className="flex justify-between text-[9px] text-gray-400 mt-1 font-mono">
                                       <span>Low (Slow)</span>
@@ -515,7 +515,7 @@ export const QuestionManager: React.FC = () => {
                                      maxLength={1000}
                                      value={editingChar.persona}
                                      onChange={e => setEditingChar({...editingChar, persona: e.target.value})}
-                                     className="w-full border border-gray-300 p-3 rounded-md bg-white text-black text-sm leading-relaxed"
+                                     className="w-full input-dark p-3 rounded-md text-sm leading-relaxed"
                                      placeholder="このキャラクターの性格、口調、振る舞いなどを記述してください..."
                                    />
                                </div>
@@ -532,7 +532,7 @@ export const QuestionManager: React.FC = () => {
                                    <button 
                                      onClick={saveCharacter}
                                      disabled={!editingChar.name}
-                                     className="px-6 py-2 bg-black text-white font-bold rounded-lg disabled:opacity-50"
+                                     className="px-6 py-2 btn-neon font-bold rounded-lg disabled:opacity-50"
                                    >
                                      保存
                                    </button>
@@ -542,15 +542,15 @@ export const QuestionManager: React.FC = () => {
                    ) : (
                        <div className="grid grid-cols-1 gap-3">
                            {characters.map(char => (
-                               <div key={char.id} onClick={() => startEditCharacter(char)} className="flex items-center gap-4 p-3 bg-white border border-gray-100 rounded-lg hover:border-black cursor-pointer transition-colors shadow-sm group">
-                                   <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                               <div key={char.id} onClick={() => startEditCharacter(char)} className="flex items-center gap-4 p-3 glass-dark border border-white/5 rounded-xl hover:border-purple-500/30 hover-glow cursor-pointer transition-colors group">
+                                   <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-white/5 shrink-0">
                                        {char.avatarUrl ? <img src={char.avatarUrl} className="w-full h-full object-cover"/> : null}
                                    </div>
                                    <div className="flex-1 min-w-0">
                                        <h4 className="font-bold text-sm truncate">{char.name}</h4>
                                        <p className="text-xs text-gray-500 truncate">{char.persona}</p>
                                    </div>
-                                   <div className="text-[10px] font-bold text-gray-400 group-hover:text-black">
+                                   <div className="text-[10px] font-bold text-gray-400 group-hover:text-purple-300">
                                        編集 →
                                    </div>
                                </div>
@@ -572,13 +572,13 @@ export const QuestionManager: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => exportQuestions('json')}
-                className="text-[10px] font-bold uppercase bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
+                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full transition-colors"
               >
                 JSON
               </button>
               <button
                 onClick={() => exportQuestions('csv')}
-                className="text-[10px] font-bold uppercase bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors"
+                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full transition-colors"
               >
                 CSV
               </button>
@@ -588,11 +588,11 @@ export const QuestionManager: React.FC = () => {
         {/* Question List ... */}
         <div className="space-y-3">
           {questions.map((q) => (
-            <div key={q.id} className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm flex flex-col gap-2">
+            <div key={q.id} className="glass-dark p-4 border border-white/10 rounded-xl flex flex-col gap-2">
               <p className="font-medium text-sm leading-snug">{q.text}</p>
               <div className="flex justify-between items-center mt-1">
                 <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-gray-400">
-                  <span className="bg-gray-100 px-1 rounded">{q.difficulty}</span>
+                  <span className="bg-white/10 px-1 rounded">{q.difficulty}</span>
                   <span>{q.source}</span>
                 </div>
                 <button
