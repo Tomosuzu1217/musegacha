@@ -32,18 +32,18 @@ export const ActivityLogView: React.FC = () => {
     .slice(0, 5);
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-spring-fade-up">
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="text-center p-4 card-cinematic rounded-xl">
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-1">
           <p className="text-2xl font-bold font-display">{profile.totalConsultations}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Consults</p>
         </div>
-        <div className="text-center p-4 card-cinematic rounded-xl">
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-2">
           <p className="text-2xl font-bold font-display">{profile.totalQuestionsGenerated}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Generated</p>
         </div>
-        <div className="text-center p-4 card-cinematic rounded-xl">
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-3">
           <p className="text-2xl font-bold font-display">{profile.totalSessionsCompleted}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Sessions</p>
         </div>
@@ -74,7 +74,7 @@ export const ActivityLogView: React.FC = () => {
       <div className="flex gap-2 mb-4 flex-wrap">
         <button
           onClick={() => setFilter(null)}
-          className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border ${
+          className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider border btn-spring ${
             filter === null ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'chip-dark'
           }`}
         >
@@ -84,7 +84,7 @@ export const ActivityLogView: React.FC = () => {
           <button
             key={key}
             onClick={() => setFilter(filter === key ? null : key)}
-            className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border ${
+            className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider border btn-spring ${
               filter === key ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'chip-dark'
             }`}
           >

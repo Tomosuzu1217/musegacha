@@ -110,7 +110,7 @@ export const RateLimitIndicator: React.FC<RateLimitIndicatorProps> = ({
 
             {/* Expanded details panel */}
             {isExpanded && (
-                <div className="absolute top-12 right-0 w-64 glass-premium rounded-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute top-12 right-0 w-64 glass-premium rounded-xl p-4 z-50 animate-spring-snappy">
                     <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                         API使用状況

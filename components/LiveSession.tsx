@@ -242,45 +242,57 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-black text-white relative overflow-hidden">
-        {/* Background Grid Accent */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" 
-             style={{backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)', backgroundSize: '40px 40px'}}>
-        </div>
+    <div className="flex flex-col items-center justify-center h-full w-full bg-[#0a0a14] text-white relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-gradient-mesh opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 bg-grid-premium pointer-events-none" />
+        <div className="absolute inset-0 bg-noise pointer-events-none" />
 
-        <div className="z-10 flex flex-col items-center gap-8">
-            <div className={`text-xs font-mono uppercase tracking-widest px-3 py-1 border ${
-                status === 'connected' ? 'border-green-500 text-green-500 animate-pulse' : 
-                status === 'error' ? 'border-red-500 text-red-500' : 'border-gray-500 text-gray-500'
+        <div className="z-10 flex flex-col items-center gap-10 animate-spring-fade-up">
+            {/* Status badge */}
+            <div className={`text-[10px] font-mono uppercase tracking-[0.3em] px-5 py-2.5 rounded-full backdrop-blur-md animate-spring-snappy ${
+                status === 'connected' ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' :
+                status === 'error' ? 'bg-red-500/10 border border-red-500/25 text-red-400' : 'bg-white/5 border border-white/10 text-gray-500'
             }`}>
-                {status === 'connected' ? 'LIVE SESSION ACTIVE' : status.toUpperCase()}
+                <span className="flex items-center gap-2">
+                  {status === 'connected' && <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>}
+                  {status === 'connected' ? 'LIVE' : status.toUpperCase()}
+                </span>
             </div>
 
-            {/* Visualizer */}
-            <div className="flex items-end gap-2 h-32">
+            {/* Visualizer - enhanced with more bars and glow */}
+            <div className="flex items-end gap-2 h-40 px-4">
                 {visualizerData.map((h, i) => (
-                    <div 
-                        key={i} 
-                        className="w-4 bg-purple-400 transition-all duration-75"
-                        style={{ height: `${h}%`, opacity: 0.8 }}
+                    <div
+                        key={i}
+                        className="w-3 rounded-full"
+                        style={{
+                          height: `${h}%`,
+                          background: `linear-gradient(to top, rgba(139, 92, 246, 0.9), rgba(59, 130, 246, 0.7), rgba(236, 72, 153, 0.5))`,
+                          boxShadow: `0 0 ${h / 4}px rgba(139, 92, 246, 0.5), 0 0 ${h / 2}px rgba(139, 92, 246, 0.2)`,
+                          opacity: 0.5 + (h / 120),
+                          transition: 'height 0.08s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.1s ease',
+                        }}
                     />
                 ))}
             </div>
 
-            <div className="text-center max-w-md px-4">
-                <p className="font-display text-2xl font-bold mb-2">Listening...</p>
-                <p className="font-mono text-xs text-gray-400">Speak naturally. The AI will respond.</p>
+            <div className="text-center max-w-md px-6">
+                <p className="font-display text-3xl font-bold mb-3 gradient-text tracking-tight">Listening</p>
+                <p className="font-mono text-xs text-gray-500 tracking-wide">Speak naturally. The AI will respond.</p>
             </div>
 
             {errorMessage && (
-                <div className="text-red-500 font-mono text-xs">{errorMessage}</div>
+                <div className="px-4 py-2 bg-red-900/10 border border-red-500/15 rounded-xl animate-spring-snappy">
+                  <p className="text-red-400 font-mono text-xs">{errorMessage}</p>
+                </div>
             )}
-            
-            <button 
+
+            <button
                 onClick={onSessionEnd}
-                className="mt-8 px-8 py-4 btn-neon font-bold uppercase tracking-widest transition-colors rounded-lg"
+                className="mt-4 chat-send-btn px-10 py-4 font-bold uppercase tracking-[0.15em] text-sm btn-spring"
             >
-                End Session & Publish
+                End Session
             </button>
         </div>
     </div>

@@ -117,7 +117,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-      <div className="card-cinematic rounded-xl w-full max-w-lg p-8 animate-in fade-in zoom-in duration-200 shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto">
+      <div className="card-cinematic rounded-xl w-full max-w-lg p-8 animate-spring-scale shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold font-display uppercase tracking-tight mb-4">システム設定</h2>
 
         <div className="space-y-6">
@@ -207,8 +207,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('auto')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'auto'
-                  ? 'bg-purple-600 text-white border-purple-600'
+                className={`flex-1 py-2.5 px-3 text-xs font-mono border rounded-lg btn-spring ${ttsMode === 'auto'
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30'
                   : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
@@ -217,8 +217,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('webspeech')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'webspeech'
-                  ? 'bg-purple-600 text-white border-purple-600'
+                className={`flex-1 py-2.5 px-3 text-xs font-mono border rounded-lg btn-spring ${ttsMode === 'webspeech'
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30'
                   : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
@@ -227,8 +227,8 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 type="button"
                 onClick={() => handleTTSModeChange('gemini')}
-                className={`flex-1 py-2 px-3 text-xs font-mono border rounded-lg transition-colors ${ttsMode === 'gemini'
-                  ? 'bg-purple-600 text-white border-purple-600'
+                className={`flex-1 py-2.5 px-3 text-xs font-mono border rounded-lg btn-spring ${ttsMode === 'gemini'
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30'
                   : 'bg-transparent text-gray-300 border-white/10 hover:border-purple-500/30'
                   }`}
               >
@@ -275,7 +275,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
               <button
                 onClick={handleSave}
                 disabled={!apiKeyRotation.hasValidKey() && !newApiKey.trim()}
-                className="px-6 py-2 btn-neon font-bold uppercase text-xs tracking-widest rounded-lg disabled:opacity-50"
+                className="px-6 py-2 btn-neon font-bold uppercase text-xs tracking-widest rounded-xl btn-spring disabled:opacity-50"
               >
                 設定を保存
               </button>

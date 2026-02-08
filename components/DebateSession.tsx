@@ -1606,89 +1606,93 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     const selectedCommentator = availableCharacters.find(c => c.id === selectedCommentatorId);
 
     return (
-      <div className="absolute inset-0 flex flex-col bg-debate-dark bg-grid-dark">
-        {/* 装飾的な光の効果 */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none z-0" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none z-0" />
-
-        {/* スクロール領域: absolute で親サイズに固定 */}
-        <div className="flex-1 relative" style={{ minHeight: 0 }}>
-          <div className="absolute inset-0 overflow-y-auto p-4 z-10" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-white animate-spring-smooth">
+        {/* スクロール領域 */}
+        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="p-4 pb-8">
             {/* ヘッダー */}
-            <div className="text-center py-4">
-              <h2 className="font-display font-bold text-2xl uppercase tracking-widest gradient-text">
+            <div className="text-center py-4 animate-spring-fade-up">
+              <h2 className="font-display font-bold text-2xl uppercase tracking-widest text-gray-800">
                 キャラクター選択
               </h2>
               <p className="font-mono text-xs text-gray-500 mt-1">
-                🎭 会話に参加するキャラクターを選んでください
+                会話に参加するキャラクターを選んでください
               </p>
             </div>
 
             {/* お題表示 */}
-            <div className="glass rounded-xl p-4 mb-4 max-w-lg mx-auto">
-              <p className="text-white text-sm text-center">{question.text}</p>
+            <div className="bg-white rounded-xl p-4 mb-4 max-w-lg mx-auto shadow-sm border border-gray-200 animate-spring-fade-up stagger-1">
+              <p className="text-gray-800 text-sm text-center">{question.text}</p>
             </div>
 
             {/* 選択モード切り替え */}
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex justify-center gap-2 mb-4 animate-spring-fade-up stagger-2">
               <button
                 onClick={() => setCharacterSelectionMode('auto')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'auto'
-                  ? 'bg-purple-600 text-white'
-                  : 'glass text-white/70 hover:bg-white/10'
+                className={`px-4 py-2.5 rounded-full text-xs font-bold btn-spring ${characterSelectionMode === 'auto'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-500/30'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                🎯 自動選択
+                自動選択
               </button>
               <button
                 onClick={randomizeCharacters}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'random'
-                  ? 'bg-blue-600 text-white'
-                  : 'glass text-white/70 hover:bg-white/10'
+                className={`px-4 py-2.5 rounded-full text-xs font-bold btn-spring ${characterSelectionMode === 'random'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                🎲 ランダム
+                ランダム
               </button>
               <button
                 onClick={() => setCharacterSelectionMode('manual')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${characterSelectionMode === 'manual'
-                  ? 'bg-green-600 text-white'
-                  : 'glass text-white/70 hover:bg-white/10'
+                className={`px-4 py-2.5 rounded-full text-xs font-bold btn-spring ${characterSelectionMode === 'manual'
+                  ? 'bg-green-600 text-white shadow-md shadow-green-500/30'
+                  : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                ✋ 手動選択
+                手動選択
               </button>
             </div>
 
             {/* 選択中のキャラクター表示 */}
-            <div className="flex justify-center gap-8 mb-6">
+            <div className="flex justify-center gap-8 mb-6 animate-spring-fade-up stagger-3">
               <div className="flex flex-col items-center">
-                <div className="text-[10px] text-gray-400 mb-1 uppercase">Moderator</div>
-                {selectedModerator && (
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500 glow-purple">
+                <div className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Moderator</div>
+                {selectedModerator ? (
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-purple-500 shadow-lg shadow-purple-500/20 animate-spring-scale">
                     <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt={selectedModerator.name} />
                   </div>
-                )}
-                <p className="mt-1 text-white text-sm font-bold">{selectedModerator?.name || '未選択'}</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-[10px] text-gray-400 mb-1 uppercase">Commentator</div>
-                {selectedCommentator && (
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-red-500 glow-red">
-                    <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt={selectedCommentator.name} />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <span className="text-gray-400 text-2xl">?</span>
                   </div>
                 )}
-                <p className="mt-1 text-white text-sm font-bold">{selectedCommentator?.name || '未選択'}</p>
+                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedModerator?.name || '未選択'}</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Commentator</div>
+                {selectedCommentator ? (
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-red-500 shadow-lg shadow-red-500/20 animate-spring-scale">
+                    <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt={selectedCommentator.name} />
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <span className="text-gray-400 text-2xl">?</span>
+                  </div>
+                )}
+                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedCommentator?.name || '未選択'}</p>
               </div>
             </div>
 
             {/* キャラクター一覧（手動選択時） */}
             {characterSelectionMode === 'manual' && (
-              <div className="max-w-2xl mx-auto pb-4">
-                <div className="text-[10px] text-gray-400 mb-2 uppercase text-center">
-                  キャラクターをタップして選択（1人目: Moderator, 2人目: Commentator）
+              <div className="max-w-2xl mx-auto pb-4 animate-spring-fade-up">
+                <div className="text-[10px] text-gray-500 mb-3 uppercase text-center font-bold tracking-wider">
+                  キャラクターをタップして選択
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3">
                   {availableCharacters.map((char) => {
                     const isModerator = char.id === selectedModeratorId;
                     const isCommentator = char.id === selectedCommentatorId;
@@ -1697,6 +1701,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                     return (
                       <button
                         key={char.id}
+                        type="button"
                         onClick={() => {
                           if (isModerator) {
                             setSelectedModeratorId(null);
@@ -1707,28 +1712,27 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                           } else if (!selectedCommentatorId && char.id !== selectedModeratorId) {
                             setSelectedCommentatorId(char.id);
                           } else {
-                            // 既に2人選択済みの場合、Moderatorを入れ替え
                             setSelectedModeratorId(char.id);
                           }
                         }}
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${isSelected
+                        className={`selection-grid-item flex flex-col items-center p-2 rounded-xl ${isSelected
                           ? isModerator
-                            ? 'bg-purple-600/30 ring-2 ring-purple-500'
-                            : 'bg-red-600/30 ring-2 ring-red-500'
-                          : 'glass hover:bg-white/10'
+                            ? 'bg-purple-100 ring-2 ring-purple-500 shadow-md selected'
+                            : 'bg-red-100 ring-2 ring-red-500 shadow-md selected'
+                          : 'bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
                           }`}
                       >
-                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${isSelected
+                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 ${isSelected
                           ? isModerator ? 'border-purple-500' : 'border-red-500'
-                          : 'border-white/20'
+                          : 'border-gray-300'
                           }`}>
                           <img src={char.avatarUrl} className="w-full h-full object-cover" alt={char.name} />
                         </div>
-                        <p className="mt-1 text-white text-[10px] font-bold truncate w-full text-center">
+                        <p className="mt-1 text-gray-800 text-[9px] sm:text-[10px] font-bold truncate w-full text-center leading-tight">
                           {char.name}
                         </p>
                         {isSelected && (
-                          <span className={`text-[8px] ${isModerator ? 'text-purple-400' : 'text-red-400'}`}>
+                          <span className={`text-[8px] font-bold animate-spring-scale ${isModerator ? 'text-purple-600' : 'text-red-600'}`}>
                             {isModerator ? 'M' : 'C'}
                           </span>
                         )}
@@ -1743,27 +1747,27 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
             {characterSelectionMode !== 'manual' && (
               <div className="max-w-lg mx-auto space-y-3">
                 {selectedModerator && (
-                  <div className="glass rounded-xl p-3">
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-purple-500 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500 flex-shrink-0">
                         <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt="" />
                       </div>
                       <div>
-                        <p className="text-white text-sm font-bold">{selectedModerator.name}</p>
-                        <p className="text-gray-400 text-[10px]">{selectedModerator.persona?.slice(0, 50)}...</p>
+                        <p className="text-gray-800 text-sm font-bold">{selectedModerator.name}</p>
+                        <p className="text-gray-500 text-[10px]">{selectedModerator.persona?.slice(0, 50)}...</p>
                       </div>
                     </div>
                   </div>
                 )}
                 {selectedCommentator && (
-                  <div className="glass rounded-xl p-3">
+                  <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-red-500 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-red-500 flex-shrink-0">
                         <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt="" />
                       </div>
                       <div>
-                        <p className="text-white text-sm font-bold">{selectedCommentator.name}</p>
-                        <p className="text-gray-400 text-[10px]">{selectedCommentator.persona?.slice(0, 50)}...</p>
+                        <p className="text-gray-800 text-sm font-bold">{selectedCommentator.name}</p>
+                        <p className="text-gray-500 text-[10px]">{selectedCommentator.persona?.slice(0, 50)}...</p>
                       </div>
                     </div>
                   </div>
@@ -1774,13 +1778,13 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
         </div>
 
         {/* スタートボタン（固定フッター） */}
-        <div className="shrink-0 p-4 glass-dark relative z-10">
+        <div className="shrink-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
           <button
             onClick={startSessionWithCharacters}
             disabled={!selectedModeratorId || !selectedCommentatorId}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-2xl font-bold text-lg uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:scale-[1.02] transition-transform glow-purple"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed btn-spring shadow-lg shadow-purple-500/25"
           >
-            🎙️ セッション開始
+            セッション開始
           </button>
         </div>
       </div>
@@ -1848,7 +1852,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
           </div>
 
           {/* チャットメッセージ */}
-          {scriptMessages.map((msg) => {
+          {scriptMessages.map((msg, idx) => {
             const userRecording = msg.role === 'user' ? savedRecordings.find(r => r.messageId === msg.id) : null;
             const msgChar = charactersRef.current.find(c => c.id === msg.role);
             const msgAvatarUrl = msgChar
@@ -1856,43 +1860,48 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
               : '';
 
             return (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              <div
+                key={msg.id}
+                className={`flex ${msg.role === 'user' ? 'justify-end chat-msg-user' : 'justify-start chat-msg-ai'}`}
+                style={{ animationDelay: `${Math.min(idx * 60, 300)}ms` }}
+              >
                 {/* アバター（左側 - Host/Guest） */}
                 {msg.role !== 'user' && msgChar && (
-                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/20 shrink-0 mr-2 mt-1">
+                  <div className="ai-avatar-ring w-10 h-10 rounded-full overflow-hidden border border-white/10 shrink-0 mr-2.5 mt-1 shadow-lg shadow-black/20">
                     <img src={msgAvatarUrl} className="w-full h-full object-cover" alt={msgChar.name} />
                   </div>
                 )}
-                <div className={`max-w-[75%] p-4 rounded-2xl text-sm relative transition-all ${msg.role === 'user'
-                  ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white glow-blue'
+                <div className={`max-w-[75%] p-4 text-sm relative transition-all ${msg.role === 'user'
+                  ? 'chat-bubble-user'
                   : msg.role === 'moderator'
-                    ? 'glass text-white'
-                    : 'bg-gradient-to-br from-red-600/90 to-pink-600/90 text-white glow-red'
-                  }`}>
+                    ? 'chat-bubble-ai'
+                    : 'chat-bubble-ai border-red-500/15'
+                  }`}
+                  style={msg.role === 'commentator' ? { background: 'linear-gradient(135deg, rgba(30, 15, 25, 0.75), rgba(40, 15, 30, 0.75))' } : undefined}
+                >
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`w-2 h-2 rounded-full ${msg.role === 'user' ? 'bg-blue-300' : msg.role === 'moderator' ? 'bg-white/60' : 'bg-red-300'
+                    <span className={`w-1.5 h-1.5 rounded-full ${msg.role === 'user' ? 'bg-blue-300/80' : msg.role === 'moderator' ? 'bg-purple-400/60' : 'bg-red-400/60'
                       }`} />
-                    <span className="text-[10px] font-bold uppercase opacity-80">
+                    <span className="text-[10px] font-bold uppercase opacity-70 tracking-wider">
                       {msgChar?.name || (msg.role === 'moderator' ? 'Host' : msg.role === 'commentator' ? 'Guest' : 'ZENZEN')}
                     </span>
-                    {/* 録音再生ボタン */}
                     {userRecording && (
                       <button
                         onClick={() => playRecording(userRecording)}
-                        className="ml-auto bg-white/20 hover:bg-white/30 rounded-full p-1 transition-colors"
+                        className="ml-auto bg-white/10 hover:bg-white/20 rounded-lg p-1.5 transition-all active:scale-90"
                         title="録音を再生"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                           <polygon points="5 3 19 12 5 21 5 3" />
                         </svg>
                       </button>
                     )}
                   </div>
-                  <p className="leading-relaxed">{msg.text}</p>
+                  <p className="leading-relaxed text-[13px]">{msg.text}</p>
                 </div>
                 {/* アバター（右側 - User） */}
                 {msg.role === 'user' && msgChar && (
-                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-400/30 shrink-0 ml-2 mt-1">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-blue-400/20 shrink-0 ml-2.5 mt-1 shadow-lg shadow-black/20">
                     <img src={msgAvatarUrl} className="w-full h-full object-cover" alt={msgChar.name} />
                   </div>
                 )}
@@ -1905,14 +1914,14 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
 
           {/* 生成中インジケータ */}
           {isGeneratingScript && (
-            <div className="flex justify-start animate-pulse">
-              <div className="glass p-4 rounded-2xl flex items-center gap-3">
-                <div className="flex gap-1">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                  ))}
+            <div className="flex justify-start chat-msg-ai">
+              <div className="chat-bubble-ai px-5 py-4 flex items-center gap-3">
+                <div className="flex gap-2">
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
                 </div>
-                <span className="text-xs text-gray-400">考え中...</span>
+                <span className="text-[11px] text-purple-400/50 font-mono tracking-wide">考え中...</span>
               </div>
             </div>
           )}
@@ -2696,7 +2705,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
             <div className="flex flex-col items-center relative z-20">
               {activeSpeaker && (
                 <div
-                  className="flex flex-col items-center animate-in fade-in zoom-in duration-500"
+                  className="flex flex-col items-center animate-spring-scale"
                   key={`active-${activeSpeaker.id}`}
                 >
                   {/* 大きな円形アバター - 表情スタック（瞬間切り替え）- サイズ拡大 */}
@@ -2746,7 +2755,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
             {/* 話す内容 - 中央 */}
             <div className="w-full max-w-md px-4 flex-shrink-0">
               {currentSpeaker && scriptRef.current[currentMessageIndex] && (
-                <div className={`p-5 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 relative bg-gradient-to-br ${activeStyle.bgGradient} text-white`}>
+                <div className={`p-5 rounded-2xl shadow-2xl animate-spring-snappy relative bg-gradient-to-br ${activeStyle.bgGradient} text-white`}>
                   {/* 上向きの三角形（吹き出し的な装飾） */}
                   <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-current`}
                     style={{ borderBottomColor: currentSpeaker === 'moderator' ? '#9333ea' : currentSpeaker === 'user' ? '#2563eb' : '#dc2626' }} />
@@ -2775,7 +2784,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   return (
                     <div
                       key={char.id}
-                      className="flex flex-col items-center shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                      className="flex flex-col items-center shrink-0 animate-spring-fade-up"
                       style={{
                         animationDelay: `${animDelay}ms`,
                         opacity: 0.7,

@@ -447,61 +447,49 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
       <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-transparent">
 
         {mode === 'setup' && (
-          <div className="absolute inset-0 flex flex-col overflow-hidden">
-            {/* 背景プレビュー（ぼかし+アニメーション） */}
-            <div
-              className="absolute inset-0 transition-all duration-700 ease-out"
-              style={{
-                background: selectedStageTheme.preview,
-                filter: 'blur(20px)',
-                opacity: 0.6,
-                transform: 'scale(1.1)',
-                animation: 'stage-bg-float 20s ease-in-out infinite',
-              }}
-            />
-            {/* オーバーレイ */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14]/80 via-[#0a0a14]/60 to-[#0a0a14]/80" />
-
-            {/* コンテンツ */}
-            <div className="relative z-10 flex-1 overflow-y-auto pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="p-6 text-center">
-                <h3 className="font-display text-2xl font-bold uppercase mb-2">ステージ選択</h3>
-                <p className="font-mono text-xs text-gray-400">
+          <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-white animate-spring-smooth">
+            {/* スクロール可能なコンテンツエリア */}
+            <div className="flex-1 overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="p-6 text-center animate-spring-fade-up">
+                <h3 className="font-display text-2xl font-bold uppercase mb-2 text-gray-800">ステージ選択</h3>
+                <p className="font-mono text-xs text-gray-500">
                   セッションの背景テーマを選んでください
                 </p>
               </div>
 
-              <div className="px-4 flex-1">
-                {/* STAGE THEME SELECTION - 拡大版 */}
-                <div className="grid grid-cols-3 gap-3">
-                  {STAGE_THEMES.map(theme => (
+              <div className="px-4 pb-4">
+                {/* STAGE THEME SELECTION */}
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                  {STAGE_THEMES.map((theme, idx) => (
                     <button
                       key={theme.id}
+                      type="button"
                       onClick={() => handleStageThemeChange(theme)}
-                      className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${selectedStageTheme.id === theme.id
-                        ? 'border-purple-500 shadow-xl scale-105 glass-dark glow-purple'
-                        : 'border-white/10 hover:border-white/20 glass-dark hover-glow'
+                      className={`selection-grid-item flex flex-col items-center p-2 sm:p-3 rounded-xl border-2 animate-card-stagger ${selectedStageTheme.id === theme.id
+                        ? 'border-purple-500 shadow-lg bg-purple-50 selected'
+                        : 'border-gray-200 hover:border-gray-300 bg-white shadow-sm'
                         }`}
+                      style={{ animationDelay: `${idx * 50}ms` }}
                     >
                       {/* プレビュー */}
                       <div
-                        className="w-full aspect-video rounded-lg border border-white/10 overflow-hidden relative"
+                        className="w-full aspect-video rounded-lg border border-gray-200 overflow-hidden relative"
                         style={{ background: theme.preview }}
                       >
                         {/* ステージシルエット */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="w-6 h-6 rounded-full bg-white/40 border-2 border-white/60 shadow-lg" />
-                          <div className="w-10 h-2 mt-1.5 rounded-full bg-white/30" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/40 border-2 border-white/60 shadow-lg" />
+                          <div className="w-8 sm:w-10 h-1.5 sm:h-2 mt-1 sm:mt-1.5 rounded-full bg-white/30" />
                         </div>
                         {/* 選択マーク */}
                         {selectedStageTheme.id === theme.id && (
-                          <div className="absolute top-1 right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                          <div className="absolute top-1 right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center shadow animate-spring-scale">
                             <span className="text-white text-xs">✓</span>
                           </div>
                         )}
                       </div>
                       {/* テーマ名 */}
-                      <span className={`text-xs font-medium mt-2 truncate w-full text-center ${selectedStageTheme.id === theme.id ? 'text-white font-bold' : 'text-gray-400'
+                      <span className={`text-[10px] sm:text-xs font-medium mt-1.5 sm:mt-2 truncate w-full text-center leading-tight ${selectedStageTheme.id === theme.id ? 'text-purple-700 font-bold' : 'text-gray-600'
                         }`}>
                         {theme.name}
                       </span>
@@ -510,20 +498,12 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                 </div>
 
                 {/* プレビュー表示エリア */}
-                <div className="mt-6 p-4 rounded-2xl card-cinematic shadow-lg">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">プレビュー</div>
+                <div className="mt-6 p-4 rounded-2xl bg-white shadow-sm border border-gray-200 animate-spring-fade-up" style={{ animationDelay: '200ms' }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">プレビュー</div>
                   <div
                     className="w-full aspect-video rounded-xl overflow-hidden relative shadow-inner"
                     style={{ background: selectedStageTheme.preview }}
                   >
-                    {/* アニメーション効果 */}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 50%)',
-                        animation: 'stage-glow-pulse 4s ease-in-out infinite',
-                      }}
-                    />
                     {/* ステージイメージ */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="flex gap-4 items-end">
@@ -550,20 +530,22 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                   </div>
                 </div>
 
-                <p className="text-center text-xs text-gray-400 mt-4">
+                <p className="text-center text-xs text-gray-500 mt-4">
                   ※ キャラクターは次の画面で選択できます
                 </p>
               </div>
+            </div>
 
-              <div className="p-6 mt-auto">
-                <button
-                  onClick={() => setMode('debate')}
-                  className="w-full py-5 btn-neon font-display font-bold text-lg uppercase tracking-widest shadow-lg rounded-lg active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>次へ</span>
-                  <span className="text-xl">→</span>
-                </button>
-              </div>
+            {/* 固定フッター：次へボタン */}
+            <div className="shrink-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+              <button
+                type="button"
+                onClick={() => setMode('debate')}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display font-bold text-lg uppercase tracking-widest shadow-lg rounded-xl btn-spring flex items-center justify-center gap-2"
+              >
+                <span>次へ</span>
+                <span className="text-xl">→</span>
+              </button>
             </div>
           </div>
         )}
@@ -636,23 +618,23 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               <div className="flex flex-col items-center p-4 min-h-full">
 
                 {/* Tab Bar */}
-                <div className="w-full max-w-sm mb-4 flex glass-dark rounded-lg shadow-sm border border-white/10 overflow-hidden">
+                <div className="w-full max-w-sm mb-4 flex glass-dark rounded-xl shadow-sm border border-white/10 overflow-hidden relative animate-spring-snappy">
                   <button
                     onClick={() => handleTabSwitch('newspaper')}
-                    className={`flex-1 py-3 text-sm font-bold transition-colors ${
+                    className={`flex-1 py-3 text-sm font-bold btn-spring relative z-10 rounded-lg m-1 ${
                       articleTab === 'newspaper'
-                        ? 'bg-purple-500 text-white'
-                        : 'bg-transparent text-gray-400 hover:bg-white/10'
+                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                        : 'bg-transparent text-gray-400 hover:text-gray-200'
                     }`}
                   >
                     新聞カード
                   </button>
                   <button
                     onClick={() => handleTabSwitch('note')}
-                    className={`flex-1 py-3 text-sm font-bold transition-colors ${
+                    className={`flex-1 py-3 text-sm font-bold btn-spring relative z-10 rounded-lg m-1 ${
                       articleTab === 'note'
-                        ? 'bg-purple-500 text-white'
-                        : 'bg-transparent text-gray-400 hover:bg-white/10'
+                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                        : 'bg-transparent text-gray-400 hover:text-gray-200'
                     }`}
                   >
                     note記事

@@ -22,10 +22,10 @@ export const HistoryViewer: React.FC = () => {
 
   if (selectedAnswer) {
     return (
-      <div className="animate-in slide-in-from-right duration-300">
+      <div className="animate-spring-left">
         <button
           onClick={() => setSelectedAnswer(null)}
-          className="mb-8 font-mono text-xs uppercase tracking-widest hover:underline flex items-center gap-2"
+          className="mb-8 font-mono text-xs uppercase tracking-widest hover:underline flex items-center gap-2 btn-spring"
         >
           ← 一覧に戻る
         </button>
@@ -50,12 +50,12 @@ export const HistoryViewer: React.FC = () => {
   }
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-spring-fade-up">
       {/* Sub-tab Toggle */}
       <div className="flex gap-0 mb-6 border-b border-white/10">
         <button
           onClick={() => setSubTab('archive')}
-          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
+          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors btn-spring ${
             subTab === 'archive' ? 'border-purple-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'
           }`}
         >
@@ -63,7 +63,7 @@ export const HistoryViewer: React.FC = () => {
         </button>
         <button
           onClick={() => setSubTab('activity')}
-          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors ${
+          className={`flex-1 text-sm font-bold uppercase tracking-widest pb-2 border-b-2 transition-colors btn-spring ${
             subTab === 'activity' ? 'border-purple-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'
           }`}
         >
@@ -82,10 +82,10 @@ export const HistoryViewer: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {answers.map((ans) => (
-            <div 
+            <div
               key={ans.id}
               onClick={() => setSelectedAnswer(ans)}
-              className="card-cinematic rounded-xl p-6 hover:bg-white/5 hover:border-purple-500/30 hover-glow transition-all cursor-pointer group h-full flex flex-col justify-between"
+              className="card-cinematic rounded-xl p-6 hover:bg-white/5 hover:border-purple-500/30 hover-glow cursor-pointer group h-full flex flex-col justify-between card-spring animate-card-stagger"
             >
               <div>
                 <div className="flex justify-between items-center mb-4 opacity-50 text-[10px] font-mono uppercase">

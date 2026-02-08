@@ -7,14 +7,14 @@ interface QuestionCardProps {
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   return (
-    <div className="-mx-4 w-[calc(100%+2rem)] py-10 px-6 flex flex-col items-center text-center transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 group relative overflow-hidden card-cinematic rounded-xl border border-white/5">
+    <div className="-mx-4 w-[calc(100%+2rem)] py-10 px-6 flex flex-col items-center text-center card-spring group relative overflow-hidden card-cinematic rounded-xl border border-white/5 animate-spring-fade-up">
 
       {/* Background Decor */}
       <div className="absolute top-2 right-3 opacity-30">
          <span className="font-mono text-[9px] text-gray-600">ID.{question.id.slice(0, 4)}</span>
       </div>
 
-      <div className="flex flex-col items-center gap-3 mb-6 w-full">
+      <div className="flex flex-col items-center gap-3 mb-6 w-full animate-spring-fade-up stagger-1">
         <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest text-gray-500 w-full justify-center border-b border-white/5 pb-2">
            <span>
              Lv.{question.difficulty}
@@ -27,14 +27,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
         <div className="flex flex-wrap gap-1.5 justify-center">
           {question.tags.map(tag => (
-            <span key={tag} className="px-2 py-0.5 text-[9px] font-bold uppercase chip-dark rounded-sm">
+            <span key={tag} className="px-2 py-0.5 text-[9px] font-bold uppercase chip-dark rounded-sm btn-spring">
               #{tag}
             </span>
           ))}
         </div>
       </div>
 
-      <h2 className="text-2xl sm:text-3xl font-bold leading-normal tracking-tight font-display w-full break-words text-balance text-white">
+      <h2 className="text-2xl sm:text-3xl font-bold leading-normal tracking-tight font-display w-full break-words text-balance text-white animate-spring-fade-up stagger-2">
         {question.text}
       </h2>
     </div>

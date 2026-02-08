@@ -147,7 +147,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
 
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsOpen(false)}>
-          <div className="card-cinematic rounded-xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 shadow-2xl relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+          <div className="card-cinematic rounded-xl w-full max-w-lg p-6 animate-spring-scale shadow-2xl relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6 shrink-0">
               <h3 className="font-display font-bold text-xl uppercase">画像を選択</h3>
               <button onClick={() => setIsOpen(false)} className="text-xs font-mono underline hover:text-gray-500">CLOSE</button>
@@ -156,13 +156,13 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({ label, currentImag
             <div className="flex border-b border-white/10 mb-6 shrink-0">
               <button
                 onClick={() => setActiveTab('upload')}
-                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'upload' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors btn-spring ${activeTab === 'upload' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 アップロード
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'history' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors btn-spring ${activeTab === 'history' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 履歴から選択
               </button>

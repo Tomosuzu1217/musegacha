@@ -236,15 +236,15 @@ export const QuestionManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-      
+    <div className="space-y-8 animate-spring-fade-up pb-20">
+
       {/* Tab Switcher */}
       <div className="flex w-full border-b border-white/10 overflow-x-auto no-scrollbar snap-x">
         {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`flex-none px-6 py-3 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap snap-start ${
+              className={`flex-none px-6 py-3 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap snap-start btn-spring ${
                 activeTab === t.id ? 'border-purple-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
               }`}
             >
@@ -303,7 +303,7 @@ export const QuestionManager: React.FC = () => {
                     key={tag}
                     type="button"
                     onClick={() => toggleTag(tag)}
-                    className={`px-3 py-1 text-[9px] uppercase font-bold border rounded-full transition-all ${
+                    className={`px-3 py-1.5 text-[9px] uppercase font-bold border rounded-full btn-spring ${
                       newTags.includes(tag)
                         ? 'bg-purple-600/30 text-purple-300 border-purple-500/50'
                         : 'chip-dark'
@@ -317,7 +317,7 @@ export const QuestionManager: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg active:scale-95 transition-all"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-xl btn-spring"
             >
               質問を追加
             </button>
@@ -345,7 +345,7 @@ export const QuestionManager: React.FC = () => {
             <button
               type="submit"
               disabled={isAiGenerating}
-              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-xl btn-spring disabled:opacity-50"
             >
               {isAiGenerating ? '生成中...' : '生成する'}
             </button>
@@ -374,7 +374,7 @@ export const QuestionManager: React.FC = () => {
             <button
               type="submit"
               disabled={isUrlExtracting}
-              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-lg disabled:opacity-50"
+              className="w-full btn-neon py-4 font-bold uppercase tracking-widest rounded-xl btn-spring disabled:opacity-50"
             >
               {isUrlExtracting ? '解析中...' : '抽出する'}
             </button>
@@ -421,9 +421,9 @@ export const QuestionManager: React.FC = () => {
                            </select>
                        </div>
                    </div>
-                   <button 
+                   <button
                      onClick={handleSaveConfig}
-                     className="mt-6 w-full py-3 btn-neon font-bold uppercase tracking-widest rounded-lg transition-colors"
+                     className="mt-6 w-full py-3 btn-neon font-bold uppercase tracking-widest rounded-xl btn-spring"
                    >
                      配役を保存
                    </button>
@@ -433,16 +433,16 @@ export const QuestionManager: React.FC = () => {
                <div className="border-t border-white/5 pt-8">
                    <div className="flex justify-between items-end mb-6">
                        <h3 className="font-display font-bold text-xl uppercase tracking-tight">キャラクターリスト</h3>
-                       <button 
+                       <button
                          onClick={() => startEditCharacter()}
-                         className="text-xs font-bold uppercase btn-neon px-4 py-2 rounded-full hover:scale-105 transition-transform"
+                         className="text-xs font-bold uppercase btn-neon px-4 py-2 rounded-full btn-spring"
                        >
                          + 新規作成
                        </button>
                    </div>
 
                    {editingChar ? (
-                       <div className="card-cinematic p-6 rounded-xl animate-in fade-in slide-in-from-bottom-4">
+                       <div className="card-cinematic p-6 rounded-xl animate-spring-fade-up">
                            <div className="flex justify-between items-center mb-6">
                                <h4 className="font-bold text-lg">{isEditingNew ? '新規キャラクター作成' : 'キャラクター編集'}</h4>
                                <button onClick={() => setEditingChar(null)} className="text-xs underline text-gray-500">キャンセル</button>
@@ -542,7 +542,7 @@ export const QuestionManager: React.FC = () => {
                    ) : (
                        <div className="grid grid-cols-1 gap-3">
                            {characters.map(char => (
-                               <div key={char.id} onClick={() => startEditCharacter(char)} className="flex items-center gap-4 p-3 glass-dark border border-white/5 rounded-xl hover:border-purple-500/30 hover-glow cursor-pointer transition-colors group">
+                               <div key={char.id} onClick={() => startEditCharacter(char)} className="flex items-center gap-4 p-3 glass-dark border border-white/5 rounded-xl hover:border-purple-500/30 hover-glow cursor-pointer card-spring group">
                                    <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-white/5 shrink-0">
                                        {char.avatarUrl ? <img src={char.avatarUrl} className="w-full h-full object-cover"/> : null}
                                    </div>
@@ -572,13 +572,13 @@ export const QuestionManager: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => exportQuestions('json')}
-                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full transition-colors"
+                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full btn-spring"
               >
                 JSON
               </button>
               <button
                 onClick={() => exportQuestions('csv')}
-                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full transition-colors"
+                className="text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 rounded-full btn-spring"
               >
                 CSV
               </button>
@@ -588,7 +588,7 @@ export const QuestionManager: React.FC = () => {
         {/* Question List ... */}
         <div className="space-y-3">
           {questions.map((q) => (
-            <div key={q.id} className="glass-dark p-4 border border-white/10 rounded-xl flex flex-col gap-2">
+            <div key={q.id} className="glass-dark p-4 border border-white/10 rounded-xl flex flex-col gap-2 card-spring animate-card-stagger">
               <p className="font-medium text-sm leading-snug">{q.text}</p>
               <div className="flex justify-between items-center mt-1">
                 <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-gray-400">
