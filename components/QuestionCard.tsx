@@ -3,11 +3,25 @@ import { Question } from '../types';
 
 interface QuestionCardProps {
   question: Question;
+  onToggleFavorite?: (id: string) => void;
 }
 
-export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onToggleFavorite }) => {
   return (
     <div className="-mx-4 w-[calc(100%+2rem)] py-10 px-6 flex flex-col items-center text-center card-spring group relative overflow-hidden card-cinematic rounded-xl border border-white/5 animate-spring-fade-up">
+
+      {/* Favorite star */}
+      {onToggleFavorite && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(question.id); }}
+          className="absolute top-3 left-3 btn-spring text-xl z-10"
+          title="Toggle Favorite"
+        >
+          <span className={question.isFavorite ? 'text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]' : 'text-gray-600 hover:text-gray-400'}>
+            {question.isFavorite ? '★' : '☆'}
+          </span>
+        </button>
+      )}
 
       {/* Background Decor */}
       <div className="absolute top-2 right-3 opacity-30">

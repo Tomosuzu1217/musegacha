@@ -69,6 +69,9 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
   const [articleTab, setArticleTab] = useState<'newspaper' | 'note'>('newspaper');
   const [sessionResult, setSessionResult] = useState<SessionEndResult | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [editableNoteText, setEditableNoteText] = useState('');
 
   // Stage Theme Selection
   const [selectedStageTheme, setSelectedStageTheme] = useState(() => {
@@ -418,6 +421,53 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
     }
   };
 
+  const handleShare = async (title: string, text: string) => {
+    const shareData = { title: `MUSE GACHA - ${title}`, text: text.slice(0, 500) };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareData.title}\n\n${text}`);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      } catch {}
+    }
+  };
+
+  const toggleNoteEdit = () => {
+    if (!isEditingNote && noteArticleData) {
+      let fullText = '';
+      for (const section of noteArticleData.sections) {
+        fullText += `## ${section.title}\n\n${section.body}\n\n`;
+      }
+      setEditableNoteText(fullText);
+    } else if (isEditingNote && noteArticleData) {
+      // Parse back edited text into sections
+      const lines = editableNoteText.split('\n');
+      const sections: { title: string; body: string }[] = [];
+      let currentTitle = '';
+      let currentBody = '';
+      for (const line of lines) {
+        if (line.startsWith('## ')) {
+          if (currentTitle) sections.push({ title: currentTitle, body: currentBody.trim() });
+          currentTitle = line.replace('## ', '');
+          currentBody = '';
+        } else {
+          currentBody += line + '\n';
+        }
+      }
+      if (currentTitle) sections.push({ title: currentTitle, body: currentBody.trim() });
+      if (sections.length > 0) {
+        setNoteArticleData({ ...noteArticleData, sections });
+      }
+    }
+    setIsEditingNote(!isEditingNote);
+  };
+
+  const insertMarkdown = (syntax: string) => {
+    setEditableNoteText(prev => prev + syntax);
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-[#0a0a14] relative">
 
@@ -742,6 +792,14 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                     >
                       {isSavingImage ? 'Saving...' : 'Save Image'}
                     </button>
+                    <div className="flex gap-2 w-full max-w-sm mt-3">
+                      <button
+                        onClick={() => articleData && handleShare(articleData.headline, articleData.body)}
+                        className="flex-1 py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 btn-spring rounded-lg"
+                      >
+                        {shareSuccess ? 'Shared!' : 'Share'}
+                      </button>
+                    </div>
                   </>
                 )}
 
@@ -771,35 +829,64 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                       </div>
                     ) : noteArticleData ? (
                       <>
-                        <div className={`card-cinematic rounded-lg shadow-lg p-6 md:p-10 ${selectedFont.class}`}>
-                          {/* Article Title */}
-                          <h1 className="text-xl md:text-2xl font-bold leading-tight mb-6 pb-4 border-b border-white/10 text-white">
-                            {noteArticleData.title}
-                          </h1>
-
-                          {/* Sections */}
-                          {noteArticleData.sections.map((section, index) => (
-                            <div key={index} className="mb-8">
-                              <h2 className="text-base md:text-lg font-bold mb-3 text-white flex items-center gap-2">
-                                <span className="w-1 h-5 bg-purple-500 rounded-full inline-block flex-shrink-0" />
-                                {section.title}
-                              </h2>
-                              <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:text-gray-300 prose-p:mb-3 prose-strong:text-white prose-strong:font-bold text-sm leading-7 text-gray-300">
-                                <Markdown>{section.body}</Markdown>
-                              </div>
+                        {/* Edit Toggle + Markdown Toolbar */}
+                        <div className="w-full flex items-center justify-between mb-3">
+                          <button
+                            onClick={toggleNoteEdit}
+                            className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg border btn-spring ${
+                              isEditingNote ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'bg-white/5 text-gray-400 border-white/10'
+                            }`}
+                          >
+                            {isEditingNote ? 'Preview' : 'Edit'}
+                          </button>
+                          {isEditingNote && (
+                            <div className="flex gap-1">
+                              <button onClick={() => insertMarkdown('**bold**')} className="px-2 py-1 text-[10px] font-bold text-gray-400 bg-white/5 rounded btn-spring">B</button>
+                              <button onClick={() => insertMarkdown('*italic*')} className="px-2 py-1 text-[10px] italic text-gray-400 bg-white/5 rounded btn-spring">I</button>
+                              <button onClick={() => insertMarkdown('\n## ')} className="px-2 py-1 text-[10px] text-gray-400 bg-white/5 rounded btn-spring">H2</button>
+                              <button onClick={() => insertMarkdown('\n- ')} className="px-2 py-1 text-[10px] text-gray-400 bg-white/5 rounded btn-spring">List</button>
                             </div>
-                          ))}
-
-                          {/* Footer */}
-                          <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
-                            <span className="font-mono text-[10px] uppercase text-gray-400">
-                              MUSE GACHA - note記事
-                            </span>
-                            <span className="font-mono text-[10px] text-gray-400">
-                              {noteArticleData.sections.reduce((sum, s) => sum + s.body.length, 0)}文字
-                            </span>
-                          </div>
+                          )}
                         </div>
+
+                        {isEditingNote ? (
+                          <textarea
+                            value={editableNoteText}
+                            onChange={(e) => setEditableNoteText(e.target.value)}
+                            className="w-full min-h-[60vh] p-6 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 font-mono leading-7 resize-y focus:outline-none focus:border-purple-500/50"
+                            spellCheck={false}
+                          />
+                        ) : (
+                          <div className={`card-cinematic rounded-lg shadow-lg p-6 md:p-10 ${selectedFont.class}`}>
+                            {/* Article Title */}
+                            <h1 className="text-xl md:text-2xl font-bold leading-tight mb-6 pb-4 border-b border-white/10 text-white">
+                              {noteArticleData.title}
+                            </h1>
+
+                            {/* Sections */}
+                            {noteArticleData.sections.map((section, index) => (
+                              <div key={index} className="mb-8">
+                                <h2 className="text-base md:text-lg font-bold mb-3 text-white flex items-center gap-2">
+                                  <span className="w-1 h-5 bg-purple-500 rounded-full inline-block flex-shrink-0" />
+                                  {section.title}
+                                </h2>
+                                <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:text-gray-300 prose-p:mb-3 prose-strong:text-white prose-strong:font-bold text-sm leading-7 text-gray-300">
+                                  <Markdown>{section.body}</Markdown>
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Footer */}
+                            <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
+                              <span className="font-mono text-[10px] uppercase text-gray-400">
+                                MUSE GACHA - note記事
+                              </span>
+                              <span className="font-mono text-[10px] text-gray-400">
+                                {noteArticleData.sections.reduce((sum, s) => sum + s.body.length, 0)}文字
+                              </span>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Copy Button */}
                         <button
@@ -811,6 +898,12 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                           }`}
                         >
                           {copySuccess ? 'Copied!' : 'Copy Text'}
+                        </button>
+                        <button
+                          onClick={() => noteArticleData && handleShare(noteArticleData.title, noteArticleData.sections.map(s => `## ${s.title}\n${s.body}`).join('\n\n'))}
+                          className="w-full mt-3 py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 btn-spring rounded-lg"
+                        >
+                          Share
                         </button>
                       </>
                     ) : null}

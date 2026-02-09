@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ConsultSession, ConsultMessage, Question, UserInterestProfile, CoreInsights } from '../types';
 import { storageService } from '../services/storageService';
 import { generateConsultResponse, generateQuestionsFromConsultation, synthesizeCoreInsights } from '../services/geminiService';
+import { LiveSession } from './LiveSession';
 
 export const ConsultChat: React.FC = () => {
   const [view, setView] = useState<'list' | 'chat'>('list');
@@ -19,6 +20,8 @@ export const ConsultChat: React.FC = () => {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
 
   const loadSessions = useCallback(() => {
     setSessions(storageService.getConsultSessions());
@@ -224,6 +227,45 @@ export const ConsultChat: React.FC = () => {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleVoiceSessionEnd = () => {
+    if (voiceTranscript.trim() && activeSession) {
+      // Save voice transcript as a message
+      const userMsg: ConsultMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        text: `[Voice Session Transcript]\n${voiceTranscript}`,
+        timestamp: Date.now(),
+      };
+      const updated: ConsultSession = {
+        ...activeSession,
+        messages: [...activeSession.messages, userMsg],
+        updatedAt: Date.now(),
+      };
+      setActiveSession(updated);
+      storageService.saveConsultSession(updated);
+    }
+    setVoiceMode(false);
+    setVoiceTranscript('');
+  };
+
+  const startVoiceSession = () => {
+    if (!activeSession) {
+      // Create a new session first
+      const newSession: ConsultSession = {
+        id: crypto.randomUUID(),
+        messages: [],
+        generatedQuestionIds: [],
+        themes: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      setActiveSession(newSession);
+      setView('chat');
+    }
+    setVoiceMode(true);
+    setVoiceTranscript('');
   };
 
   const handleManualGenerate = async () => {
@@ -472,6 +514,18 @@ export const ConsultChat: React.FC = () => {
   }
 
   // --- Chat View ---
+  if (voiceMode && activeSession) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-[#0a0a14]">
+        <LiveSession
+          question={activeSession.themes[0] || 'Free conversation'}
+          onTranscriptUpdate={(t) => setVoiceTranscript(t)}
+          onSessionEnd={handleVoiceSessionEnd}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100dvh-12rem)]">
       {/* Chat Header */}
@@ -606,6 +660,16 @@ export const ConsultChat: React.FC = () => {
             style={{ maxHeight: '120px', minHeight: '40px' }}
             disabled={isProcessing}
           />
+          <button
+            onClick={startVoiceSession}
+            disabled={isProcessing}
+            className="p-2.5 flex-shrink-0 bg-white/5 text-gray-400 border border-white/10 rounded-xl hover:bg-white/10 btn-spring disabled:opacity-30"
+            title="Voice Session"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-14 0m14 0a7 7 0 00-14 0m14 0v1a7 7 0 01-14 0v-1m7 8v4m-4 0h8" />
+            </svg>
+          </button>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isProcessing}

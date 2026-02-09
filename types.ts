@@ -11,6 +11,28 @@ export interface Question {
   difficulty: Difficulty;
   createdAt: number;
   lastUsedAt?: number;
+  isFavorite?: boolean;
+}
+
+// --- Collab Mode Types ---
+
+export interface CollabRoom {
+  id: string;
+  topic: string;
+  hostUid: string;
+  hostName: string;
+  participants: { uid: string; name: string; avatarUrl?: string }[];
+  status: 'waiting' | 'active' | 'ended';
+  createdAt: number;
+}
+
+export interface CollabMessage {
+  id: string;
+  roomId: string;
+  uid: string;
+  userName: string;
+  text: string;
+  timestamp: number;
 }
 
 export interface Answer {

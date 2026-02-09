@@ -2,23 +2,67 @@ import React, { useRef, useEffect, useState } from 'react';
 import { RateLimitIndicator } from './RateLimitIndicator';
 import { getCurrentUser, signOut } from '../services/authService';
 import { BackgroundEffects } from './BackgroundEffects';
+import { useI18n } from '../services/i18n';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
-  onTabChange: (tab: 'gacha' | 'consult' | 'manage' | 'history') => void;
+  onTabChange: (tab: 'gacha' | 'consult' | 'manage' | 'history' | 'collab') => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
+  const { locale, setLocale, t } = useI18n();
+
   const tabs = [
-    { id: 'gacha', label: 'GACHA', icon: '🎲' },
-    { id: 'consult', label: 'CONSULT', icon: '💬' },
-    { id: 'manage', label: 'MANAGE', icon: '⚙️' },
-    { id: 'history', label: 'HISTORY', icon: '📜' },
+    { id: 'gacha', label: t('tab.gacha'), icon: '🎲' },
+    { id: 'consult', label: t('tab.consult'), icon: '💬' },
+    { id: 'collab', label: 'Collab', icon: '👥' },
+    { id: 'manage', label: t('tab.manage'), icon: '⚙️' },
+    { id: 'history', label: t('tab.history'), icon: '📜' },
   ] as const;
 
   const navRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  // Theme mode
+  const [themeMode, setThemeMode] = useState<'dark' | 'light'>(() =>
+    (localStorage.getItem('musegacha_theme_mode') as 'dark' | 'light') || 'dark'
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode);
+    localStorage.setItem('musegacha_theme_mode', themeMode);
+  }, [themeMode]);
+
+  // PWA install prompt
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+  };
 
   // Update tab indicator position with spring animation
   useEffect(() => {
@@ -45,14 +89,49 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             MuseGacha
             <span className="text-[9px] bg-purple-600/30 text-purple-300 px-1.5 py-0.5 ml-1 font-mono rounded-sm border border-purple-500/30 animate-spring-scale">APP</span>
           </h1>
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-1.5 ml-auto">
+            {/* Offline indicator */}
+            {isOffline && (
+              <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full animate-pulse">
+                {t('common.offline')}
+              </span>
+            )}
+
+            {/* PWA Install */}
+            {deferredPrompt && (
+              <button
+                onClick={handleInstall}
+                className="text-[9px] font-mono text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-1 rounded-full btn-spring"
+              >
+                {t('common.install')}
+              </button>
+            )}
+
+            {/* Language toggle */}
+            <button
+              onClick={() => setLocale(locale === 'ja' ? 'en' : 'ja')}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring text-[10px] font-bold font-mono"
+              title="Toggle Language"
+            >
+              {locale === 'ja' ? 'EN' : 'JP'}
+            </button>
+
+            {/* Theme toggle */}
+            <button
+              onClick={() => setThemeMode(prev => prev === 'dark' ? 'light' : 'dark')}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring"
+              title={themeMode === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              <span className="text-base">{themeMode === 'dark' ? '☀️' : '🌙'}</span>
+            </button>
+
             <RateLimitIndicator />
             {(() => {
               const user = getCurrentUser();
               if (!user) return null;
               return (
                 <button
-                  onClick={() => { if (confirm('サインアウトしますか？')) signOut(); }}
+                  onClick={() => { if (confirm(t('auth.sign_out'))) signOut(); }}
                   className="flex items-center gap-1.5 p-1 rounded-full hover:bg-white/10 btn-spring"
                   title={user.displayName || 'Sign out'}
                 >
@@ -113,7 +192,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             MUSE
           </div>
           <div className="text-xs font-mono text-gray-600 uppercase">
-            知的思考壁打ちシステム <br />
+            {t('app.subtitle')} <br />
             © {new Date().getFullYear()}
           </div>
         </div>

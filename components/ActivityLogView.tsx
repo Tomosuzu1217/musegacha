@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ActivityLogEntry, UserInterestProfile } from '../types';
 import { storageService } from '../services/storageService';
 
@@ -8,6 +8,41 @@ const TYPE_LABELS: Record<string, { label: string; icon: string }> = {
   question_generated: { label: 'Q GEN', icon: 'Q' },
   session_completed: { label: 'SESSION', icon: 'S' },
   gacha_spin: { label: 'SPIN', icon: 'G' },
+};
+
+// Streak calculation
+const computeStreak = (logs: ActivityLogEntry[]): number => {
+  const days = new Set(logs.map(l => new Date(l.timestamp).toDateString()));
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    if (days.has(d.toDateString())) streak++;
+    else break;
+  }
+  return streak;
+};
+
+// Weekly chart data
+const getWeeklyData = (logs: ActivityLogEntry[]) => {
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dayStr = d.toDateString();
+    const count = logs.filter(l => new Date(l.timestamp).toDateString() === dayStr).length;
+    return { label: dayLabels[d.getDay()], count };
+  });
+};
+
+// Monthly trend data
+const getMonthlyData = (logs: ActivityLogEntry[]) => {
+  return Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    return logs.filter(l => new Date(l.timestamp).toDateString() === d.toDateString()).length;
+  });
 };
 
 export const ActivityLogView: React.FC = () => {
@@ -21,6 +56,11 @@ export const ActivityLogView: React.FC = () => {
   }, []);
 
   const filteredLogs = filter ? logs.filter(l => l.type === filter) : logs;
+  const streak = useMemo(() => computeStreak(logs), [logs]);
+  const weeklyData = useMemo(() => getWeeklyData(logs), [logs]);
+  const monthlyData = useMemo(() => getMonthlyData(logs), [logs]);
+  const weeklyMax = Math.max(...weeklyData.map(d => d.count), 1);
+  const monthlyMax = Math.max(...monthlyData, 1);
 
   const formatTime = (ts: number) => {
     const d = new Date(ts);
@@ -31,22 +71,91 @@ export const ActivityLogView: React.FC = () => {
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
 
+  // Monthly trend polyline
+  const monthlyPoints = monthlyData.map((v, i) => `${(i / 29) * 260 + 10},${85 - (v / monthlyMax) * 70}`).join(' ');
+
   return (
     <div className="animate-spring-fade-up">
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-4 gap-3 mb-6">
         <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-1">
+          <p className="text-2xl font-bold font-display text-purple-400">{streak}</p>
+          <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Streak</p>
+        </div>
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-2">
           <p className="text-2xl font-bold font-display">{profile.totalConsultations}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Consults</p>
         </div>
-        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-2">
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-3">
           <p className="text-2xl font-bold font-display">{profile.totalQuestionsGenerated}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Generated</p>
         </div>
-        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-3">
+        <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-4">
           <p className="text-2xl font-bold font-display">{profile.totalSessionsCompleted}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Sessions</p>
         </div>
+      </div>
+
+      {/* Weekly Bar Chart */}
+      <div className="mb-4 p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">This Week</p>
+        <svg viewBox="0 0 280 100" className="w-full h-24">
+          {weeklyData.map((day, i) => (
+            <g key={i}>
+              <rect
+                x={i * 40 + 5}
+                y={90 - (day.count / weeklyMax) * 75}
+                width={30}
+                height={Math.max((day.count / weeklyMax) * 75, 2)}
+                rx={4}
+                fill="url(#barGrad)"
+                opacity={0.8}
+              />
+              <text x={i * 40 + 20} y={98} textAnchor="middle" fill="#6b7280" fontSize="8" fontFamily="monospace">{day.label}</text>
+              {day.count > 0 && (
+                <text x={i * 40 + 20} y={86 - (day.count / weeklyMax) * 75} textAnchor="middle" fill="#a78bfa" fontSize="8" fontFamily="monospace">{day.count}</text>
+              )}
+            </g>
+          ))}
+          <defs>
+            <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.5" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      {/* Monthly Trend Line */}
+      <div className="mb-6 p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-6">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Monthly Trend (30 days)</p>
+        <svg viewBox="0 0 280 100" className="w-full h-20">
+          {/* Area fill */}
+          <polygon
+            points={`10,85 ${monthlyPoints} 270,85`}
+            fill="url(#areaGrad)"
+            opacity="0.3"
+          />
+          {/* Line */}
+          <polyline
+            points={monthlyPoints}
+            fill="none"
+            stroke="url(#lineGrad)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <defs>
+            <linearGradient id="lineGrad" x1="0" x2="1">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#3b82f6" />
+            </linearGradient>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
 
       {/* Top Themes */}

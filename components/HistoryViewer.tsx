@@ -7,6 +7,20 @@ export const HistoryViewer: React.FC = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null);
   const [subTab, setSubTab] = useState<'archive' | 'activity'>('archive');
+  const [shareSuccess, setShareSuccess] = useState(false);
+
+  const handleShare = async (title: string, text: string) => {
+    const shareData = { title: `MUSE GACHA - ${title}`, text: text.slice(0, 500) };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareData.title}\n\n${text}`);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      } catch {}
+    }
+  };
 
   useEffect(() => {
     setAnswers(storageService.getAnswers());
@@ -44,6 +58,26 @@ export const HistoryViewer: React.FC = () => {
               {selectedAnswer.final}
             </pre>
           </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={() => handleShare(selectedAnswer.questionText, selectedAnswer.final)}
+            className="flex-1 py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 btn-spring rounded-lg"
+          >
+            {shareSuccess ? 'Shared!' : 'Share'}
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(selectedAnswer.final);
+                setShareSuccess(true);
+                setTimeout(() => setShareSuccess(false), 2000);
+              } catch {}
+            }}
+            className="flex-1 py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 btn-spring rounded-lg"
+          >
+            Copy Text
+          </button>
         </div>
       </div>
     );

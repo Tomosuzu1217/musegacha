@@ -4,6 +4,7 @@ import { Question, Difficulty, PRESET_TAGS, PersonaConfig, CharacterProfile } fr
 import { storageService } from '../services/storageService';
 import { generateQuestions, extractQuestionsFromUrl, classifyApiError } from '../services/geminiService';
 import { ImageSelector } from './ImageSelector';
+import { generateAvatar } from '../services/avatarGenerator';
 
 const VOICE_OPTIONS = [
   { value: 'Kore', label: 'Kore (女性 / 落ち着き)' },
@@ -450,12 +451,24 @@ export const QuestionManager: React.FC = () => {
 
                            <div className="space-y-5">
                                {/* Image */}
-                               <ImageSelector 
+                               <ImageSelector
                                  label="アバター画像"
                                  currentImage={editingChar.avatarUrl}
                                  defaultImage=""
                                  onSelect={(url) => setEditingChar({...editingChar, avatarUrl: url})}
                                />
+                               <button
+                                 type="button"
+                                 onClick={() => {
+                                   if (editingChar) {
+                                     setEditingChar({ ...editingChar, avatarUrl: generateAvatar(editingChar.name || 'X', editingChar.persona || '') });
+                                   }
+                                 }}
+                                 className="px-4 py-2 text-xs font-bold uppercase btn-spring chip-dark rounded-lg"
+                                 disabled={!editingChar?.name}
+                               >
+                                 Auto Generate Avatar
+                               </button>
 
                                {/* Name & Voice */}
                                <div className="grid grid-cols-2 gap-4">

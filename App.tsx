@@ -7,6 +7,7 @@ import { QuestionManager } from './components/QuestionManager';
 import { HistoryViewer } from './components/HistoryViewer';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { ConsultChat } from './components/ConsultChat';
+import { CollabSession } from './components/CollabSession';
 import { storageService } from './services/storageService';
 import { apiKeyRotation } from './services/apiKeyRotation';
 import { Question, FilterState, PRESET_TAGS } from './types';
@@ -15,7 +16,7 @@ import { Question, FilterState, PRESET_TAGS } from './types';
 declare const __GEMINI_API_KEY__: string;
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'gacha' | 'consult' | 'manage' | 'history'>('gacha');
+  const [activeTab, setActiveTab] = useState<'gacha' | 'consult' | 'manage' | 'history' | 'collab'>('gacha');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [noQuestionsAvailable, setNoQuestionsAvailable] = useState(false);
@@ -28,6 +29,7 @@ const App: React.FC = () => {
   // Filters
   const [filters, setFilters] = useState<FilterState>({ tag: null, difficulty: null });
   const [showFilters, setShowFilters] = useState(false);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
     checkApiKey();
@@ -91,6 +93,7 @@ const App: React.FC = () => {
     let candidates = allQuestions.filter(q => {
       if (filters.difficulty && q.difficulty !== filters.difficulty) return false;
       if (filters.tag && !q.tags.includes(filters.tag)) return false;
+      if (showFavoritesOnly && !q.isFavorite) return false;
       return true;
     });
 
@@ -140,9 +143,17 @@ const App: React.FC = () => {
 
   const clearFilters = () => {
     setFilters({ tag: null, difficulty: null });
+    setShowFavoritesOnly(false);
   };
 
-  const hasActiveFilters = !!filters.tag || !!filters.difficulty;
+  const handleToggleFavorite = (id: string) => {
+    storageService.toggleFavorite(id);
+    if (currentQuestion && currentQuestion.id === id) {
+      setCurrentQuestion({ ...currentQuestion, isFavorite: !currentQuestion.isFavorite });
+    }
+  };
+
+  const hasActiveFilters = !!filters.tag || !!filters.difficulty || showFavoritesOnly;
 
   return (
     <>
@@ -207,7 +218,13 @@ const App: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="pt-2 text-right">
+                        <div className="pt-2 flex justify-between items-center">
+                          <button
+                            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                            className={`px-3 py-1.5 text-[10px] uppercase font-bold border rounded-full btn-spring ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
+                          >
+                            ★ Favorites
+                          </button>
                           <button onClick={clearFilters} className="text-[10px] font-bold text-red-400 underline btn-spring">RESET ALL</button>
                         </div>
                       </div>
@@ -222,7 +239,7 @@ const App: React.FC = () => {
 
                       {/* Question Card Area */}
                       <div className="flex-1 flex items-center justify-center py-2">
-                        <QuestionCard question={currentQuestion} />
+                        <QuestionCard question={currentQuestion} onToggleFavorite={handleToggleFavorite} />
                       </div>
 
                       {/* Action Buttons */}
@@ -285,6 +302,7 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'consult' && <ConsultChat />}
+        {activeTab === 'collab' && <CollabSession />}
         {activeTab === 'manage' && <QuestionManager />}
         {activeTab === 'history' && <HistoryViewer />}
       </Layout>

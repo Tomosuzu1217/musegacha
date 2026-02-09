@@ -3,6 +3,7 @@ import { GoogleGenAI, Type, Modality } from '@google/genai';
 import { Question, OutputFormat, Difficulty, Character, NewspaperContent, NoteArticleContent, ChatMessage, CharacterComment, UserInterestProfile, CoreInsights, PRESET_TAGS } from '../types';
 import { storageService } from './storageService';
 import { apiKeyRotation } from './apiKeyRotation';
+import { buildRAGContext } from './ragService';
 
 // @ts-ignore - Defined in vite.config.ts
 declare const __GEMINI_API_KEY__: string;
@@ -1811,6 +1812,9 @@ export const generateConsultResponse = async (
         .join(', ')}`
     : '';
 
+  // RAG: Retrieve relevant past context
+  const ragContext = buildRAGContext(safeMessage);
+
   const prompt = `あなたは「MuseGacha」アプリの相談アシスタントです。
 ユーザーが気になっていることや悩みを聞き、共感的に応答してください。
 
@@ -1819,7 +1823,7 @@ export const generateConsultResponse = async (
 - 深掘りの質問を投げかけてユーザーの思考を整理する手助けをする
 - 説教や解決策の押し付けはしない
 - 自然な日本語で200文字以内で応答
-${profileContext}
+${profileContext}${ragContext}
 
 会話ログ:
 ${historyContext}

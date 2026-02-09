@@ -4325,6 +4325,22 @@ export const storageService = {
     localStorage.setItem(KEYS.HISTORY, JSON.stringify(newHistory));
   },
 
+  toggleFavorite: (id: string): void => {
+    if (!isValidId(id)) return;
+    if (isFirestoreMode()) {
+      const q = cache!.questions.find(q => q.id === id);
+      if (q) {
+        q.isFavorite = !q.isFavorite;
+        firestoreService.setQuestion(currentUid!, q).catch(console.error);
+      }
+      return;
+    }
+    const questions = storageService.getQuestions().map(q =>
+      q.id === id ? { ...q, isFavorite: !q.isFavorite } : q
+    );
+    localStorage.setItem(KEYS.QUESTIONS, JSON.stringify(questions));
+  },
+
   // --- Answers ---
   getAnswers: (): Answer[] => {
     if (isFirestoreMode()) return cache!.answers;
