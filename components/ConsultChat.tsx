@@ -516,7 +516,7 @@ export const ConsultChat: React.FC = () => {
   // --- Chat View ---
   if (voiceMode && activeSession) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#0a0a14]">
+      <div className="fixed inset-0 z-[60] bg-[#1c1c3a]">
         <LiveSession
           question={activeSession.themes[0] || 'Free conversation'}
           onTranscriptUpdate={(t) => setVoiceTranscript(t)}
@@ -580,7 +580,7 @@ export const ConsultChat: React.FC = () => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 pt-2 chat-scroll-area">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-20 pt-2 chat-scroll-area">
         {activeSession?.messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center chat-msg-system">
             <div className="chat-empty-icon w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600/15 to-blue-600/15 border border-purple-500/10 flex items-center justify-center mb-5">

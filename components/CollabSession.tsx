@@ -164,7 +164,7 @@ export const CollabSession: React.FC = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 pb-4 pt-2">
+        <div className="flex-1 overflow-y-auto space-y-3 pb-20 pt-2">
           {messages.map(msg => {
             const isMe = msg.uid === currentUser.uid;
             return (

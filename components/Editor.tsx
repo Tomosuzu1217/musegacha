@@ -7,6 +7,7 @@ import { storageService } from '../services/storageService';
 import { DebateSession } from './DebateSession';
 import { ImageSelector } from './ImageSelector';
 import html2canvas from 'html2canvas';
+import { useI18n } from '../services/i18n';
 
 interface EditorProps {
   question: Question;
@@ -45,6 +46,7 @@ const STAGE_THEMES = [
 ];
 
 export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
+  const { t } = useI18n();
   const [mode, setMode] = useState<'setup' | 'debate' | 'article'>('setup');
 
   // Characters State
@@ -469,7 +471,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0a0a14] relative">
+    <div className="flex flex-col w-full bg-[#1c1c3a] relative" style={{ height: '100dvh' }}>
 
       {/* Condensed Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 glass-dark z-50 shrink-0">
@@ -494,107 +496,79 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-transparent">
+      <div className="flex-1 min-h-0 relative overflow-hidden bg-transparent">
 
         {mode === 'setup' && (
-          <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-white animate-spring-smooth">
-            {/* スクロール可能なコンテンツエリア */}
-            <div className="flex-1 overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="p-6 text-center animate-spring-fade-up">
-                <h3 className="font-display text-2xl font-bold uppercase mb-2 text-gray-800">ステージ選択</h3>
-                <p className="font-mono text-xs text-gray-500">
-                  セッションの背景テーマを選んでください
-                </p>
-              </div>
-
-              <div className="px-4 pb-4">
-                {/* STAGE THEME SELECTION */}
-                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-                  {STAGE_THEMES.map((theme, idx) => (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      onClick={() => handleStageThemeChange(theme)}
-                      className={`selection-grid-item flex flex-col items-center p-2 sm:p-3 rounded-xl border-2 animate-card-stagger ${selectedStageTheme.id === theme.id
-                        ? 'border-purple-500 shadow-lg bg-purple-50 selected'
-                        : 'border-gray-200 hover:border-gray-300 bg-white shadow-sm'
-                        }`}
-                      style={{ animationDelay: `${idx * 50}ms` }}
-                    >
-                      {/* プレビュー */}
-                      <div
-                        className="w-full aspect-video rounded-lg border border-gray-200 overflow-hidden relative"
-                        style={{ background: theme.preview }}
-                      >
-                        {/* ステージシルエット */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/40 border-2 border-white/60 shadow-lg" />
-                          <div className="w-8 sm:w-10 h-1.5 sm:h-2 mt-1 sm:mt-1.5 rounded-full bg-white/30" />
-                        </div>
-                        {/* 選択マーク */}
-                        {selectedStageTheme.id === theme.id && (
-                          <div className="absolute top-1 right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center shadow animate-spring-scale">
-                            <span className="text-white text-xs">✓</span>
-                          </div>
-                        )}
-                      </div>
-                      {/* テーマ名 */}
-                      <span className={`text-[10px] sm:text-xs font-medium mt-1.5 sm:mt-2 truncate w-full text-center leading-tight ${selectedStageTheme.id === theme.id ? 'text-purple-700 font-bold' : 'text-gray-600'
-                        }`}>
-                        {theme.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* プレビュー表示エリア */}
-                <div className="mt-6 p-4 rounded-2xl bg-white shadow-sm border border-gray-200 animate-spring-fade-up" style={{ animationDelay: '200ms' }}>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">プレビュー</div>
-                  <div
-                    className="w-full aspect-video rounded-xl overflow-hidden relative shadow-inner"
-                    style={{ background: selectedStageTheme.preview }}
-                  >
-                    {/* ステージイメージ */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex gap-4 items-end">
-                        <div className="flex flex-col items-center">
-                          <div className="w-10 h-10 rounded-full bg-white/30 border-2 border-white/50" />
-                          <div className="w-12 h-1.5 mt-2 rounded bg-white/20" />
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="w-14 h-14 rounded-full bg-white/40 border-2 border-white/60 shadow-lg" />
-                          <div className="w-16 h-2 mt-2 rounded bg-white/30" />
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="w-10 h-10 rounded-full bg-white/30 border-2 border-white/50" />
-                          <div className="w-12 h-1.5 mt-2 rounded bg-white/20" />
-                        </div>
-                      </div>
-                    </div>
-                    {/* ステージ名オーバーレイ */}
-                    <div className="absolute bottom-2 left-0 right-0 text-center">
-                      <span className="px-3 py-1 bg-black/50 rounded-full text-white text-xs font-medium backdrop-blur-sm">
-                        {selectedStageTheme.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-center text-xs text-gray-500 mt-4">
-                  ※ キャラクターは次の画面で選択できます
-                </p>
-              </div>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: 'linear-gradient(to bottom, #f9fafb, #ffffff)', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('editor.stage_select')}</h3>
+              <p style={{ fontSize: '12px', color: '#6b7280' }}>
+                {t('editor.stage_desc')}
+              </p>
             </div>
 
-            {/* 固定フッター：次へボタン */}
-            <div className="shrink-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+            <div style={{ padding: '0 16px 16px' }}>
+              {/* STAGE THEME SELECTION */}
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                {STAGE_THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => handleStageThemeChange(theme)}
+                    className={`flex flex-col items-center p-2 sm:p-3 rounded-xl border-2 transition-all ${selectedStageTheme.id === theme.id
+                      ? 'border-purple-500 shadow-lg bg-purple-50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white shadow-sm'
+                      }`}
+                  >
+                    <div
+                      className="w-full aspect-video rounded-lg border border-gray-200 overflow-hidden relative"
+                      style={{ background: theme.preview }}
+                    >
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/40 border-2 border-white/60 shadow-lg" />
+                        <div className="w-8 sm:w-10 h-1.5 sm:h-2 mt-1 sm:mt-1.5 rounded-full bg-white/30" />
+                      </div>
+                      {selectedStageTheme.id === theme.id && (
+                        <div className="absolute top-1 right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center shadow">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-[10px] sm:text-xs font-medium mt-1.5 sm:mt-2 truncate w-full text-center leading-tight ${selectedStageTheme.id === theme.id ? 'text-purple-700 font-bold' : 'text-gray-600'
+                      }`}>
+                      {theme.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280', marginTop: '24px' }}>
+                {t('editor.char_note')}
+              </p>
+            </div>
+
+            {/* ===== 次へ ===== グリッドの直後、スクロールフロー内 */}
+            <div style={{ padding: '16px', paddingBottom: '48px', background: '#ffffff' }}>
               <button
                 type="button"
                 onClick={() => setMode('debate')}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display font-bold text-lg uppercase tracking-widest shadow-lg rounded-xl btn-spring flex items-center justify-center gap-2"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '20px',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  background: 'linear-gradient(to right, #9333ea, #ec4899)',
+                  border: 'none',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 10px 30px rgba(147, 51, 234, 0.4)',
+                }}
               >
-                <span>次へ</span>
-                <span className="text-xl">→</span>
+                {t('editor.next')} →
               </button>
             </div>
           </div>
@@ -613,7 +587,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
         )}
 
         {mode === 'article' && (
-          <div className="flex-1 overflow-y-auto bg-transparent flex flex-col">
+          <div className="flex-1 overflow-y-auto bg-transparent flex flex-col pb-20">
             {isGenerating ? (
               <div className="h-full flex flex-col items-center justify-center px-6">
                 {/* 進捗円形表示 */}

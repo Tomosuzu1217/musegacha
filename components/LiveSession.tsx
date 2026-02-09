@@ -242,7 +242,7 @@ export const LiveSession: React.FC<LiveSessionProps> = ({ question, onTranscript
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-[#0a0a14] text-white relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center h-full w-full bg-[#1c1c3a] text-white relative overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 bg-gradient-mesh opacity-40 pointer-events-none" />
         <div className="absolute inset-0 bg-grid-premium pointer-events-none" />

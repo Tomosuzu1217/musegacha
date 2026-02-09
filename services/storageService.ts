@@ -4566,7 +4566,7 @@ export const storageService = {
         role: msg.role,
         text: sanitizeString(msg.text, 2000),
         timestamp: msg.timestamp,
-        emotion: msg.emotion
+        ...(msg.emotion ? { emotion: msg.emotion } : {}),
       })),
       moderatorId: conversation.moderatorId,
       commentatorId: conversation.commentatorId,
@@ -4634,7 +4634,7 @@ export const storageService = {
         text: sanitizeString(m.text, SECURITY_CONFIG.MAX_CONCERN_LENGTH),
       })),
       themes: (session.themes || []).slice(0, 20).map(t => sanitizeString(t, SECURITY_CONFIG.MAX_TAG_LENGTH)),
-      summary: session.summary ? sanitizeString(session.summary, 500) : undefined,
+      ...(session.summary ? { summary: sanitizeString(session.summary, 500) } : {}),
     };
 
     if (isFirestoreMode()) {

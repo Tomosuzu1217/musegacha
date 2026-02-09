@@ -8,6 +8,7 @@ import { BackgroundEffects, VideoContainer } from './BackgroundEffects';
 import { getOptimizedAudioConstraints } from '../services/audioProcessingService';
 import { userVoiceService } from '../services/userVoiceService';
 import UserVoiceSettings from './UserVoiceSettings';
+import { useI18n } from '../services/i18n';
 
 // 入力制限設定
 const INPUT_CONFIG = {
@@ -27,7 +28,8 @@ interface DebateSessionProps {
 }
 
 export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvatar, hostAvatar, guestAvatar, onSessionEnd, isRecording, stageTheme }) => {
-  // Mode: 
+  const { t } = useI18n();
+  // Mode:
   // 'setup': Character selection before starting
   // 'scripting': Creating the script interactively
   // 'editing': Edit/confirm audio for each message
@@ -81,6 +83,8 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
   const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerRole | null>(null);
   const [prevSpeaker, setPrevSpeaker] = useState<SpeakerRole | null>(null); // 前の話者
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [visibleCharCount, setVisibleCharCount] = useState(0);
+  const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // BGM-style ambient background animation
   const [bgmVariant, setBgmVariant] = useState(0);
@@ -308,6 +312,9 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch { /* already stopped */ }
       }
+
+      // タイプライターのクリーンアップ
+      if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
 
       // 録画のクリーンアップ
       if (recordingAnimationFrameRef.current) {
@@ -1197,8 +1204,27 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     tick(3);
   };
 
+  // タイプライター効果を開始（音声の長さに同期）
+  const startTypewriter = (text: string, durationMs: number) => {
+    if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+    setVisibleCharCount(0);
+    const charCount = text.length;
+    if (charCount === 0) return;
+    // 音声の長さに合わせて文字表示速度を計算（少し先行して全文表示）
+    const intervalMs = Math.max(20, (durationMs * 0.85) / charCount);
+    let count = 0;
+    typewriterIntervalRef.current = setInterval(() => {
+      count++;
+      setVisibleCharCount(count);
+      if (count >= charCount) {
+        if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
+      }
+    }, intervalMs);
+  };
+
   const playNextTurn = async (index: number) => {
     if (index >= scriptRef.current.length) {
+      if (typewriterIntervalRef.current) clearInterval(typewriterIntervalRef.current);
       setTimeout(finishSession, 1000);
       return;
     }
@@ -1230,82 +1256,105 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
         source.connect(recordingStreamDestRef.current);
       }
 
-      const rate = char?.pitch || 1.0;
+      const rate = (char?.pitch || 1.0) * 1.15; // 15% 速く
       source.playbackRate.value = rate;
+
+      // 音声の実際の再生時間に合わせてタイプライター開始
+      const actualDurationMs = (buffer.duration / rate) * 1000;
+      startTypewriter(msg.text, actualDurationMs);
 
       activeSourceRef.current = source;
       activeSourcesRef.current.add(source); // メモリリーク対策: ソースを追跡
 
       source.onended = () => {
         activeSourcesRef.current.delete(source); // 終了時に削除
+        setVisibleCharCount(msg.text.length); // 全文表示を保証
         playNextTurn(index + 1);
       };
 
       source.start(0);
     } else if (msg.role !== 'user' && window.speechSynthesis) {
       // Gemini TTS がない場合、Web Speech API を使用（ユーザー以外）
+      const waitTime = Math.min(2500, Math.max(800, msg.text.length * 60));
+      startTypewriter(msg.text, waitTime);
       try {
-        await speakWithWebSpeech(msg.text, char?.voiceName || 'Kore', char?.pitch || 1.0, 1.0);
+        await speakWithWebSpeech(msg.text, char?.voiceName || 'Kore', char?.pitch || 1.0, 1.15);
+        setVisibleCharCount(msg.text.length);
         playNextTurn(index + 1);
       } catch (e) {
         console.warn('Web Speech fallback failed:', e);
         // 音声なしで次へ
-        const waitTime = Math.min(3000, Math.max(1000, msg.text.length * 80));
-        setTimeout(() => playNextTurn(index + 1), waitTime);
+        setTimeout(() => {
+          setVisibleCharCount(msg.text.length);
+          playNextTurn(index + 1);
+        }, waitTime);
       }
     } else {
       // ユーザーメッセージで録音がない場合、またはWeb Speech APIがない場合
       // テキスト長に応じて待機
-      const waitTime = Math.min(3000, Math.max(1000, msg.text.length * 80));
-      setTimeout(() => playNextTurn(index + 1), waitTime);
+      const waitTime = Math.min(2500, Math.max(800, msg.text.length * 60));
+      startTypewriter(msg.text, waitTime);
+      setTimeout(() => {
+        setVisibleCharCount(msg.text.length);
+        playNextTurn(index + 1);
+      }, waitTime);
     }
   };
 
+  const buildSessionResult = (): SessionEndResult => {
+    const transcript = scriptRef.current.map(m => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
+    const moderator = charactersRef.current.find(c => c.id === 'moderator');
+    const commentator = charactersRef.current.find(c => c.id === 'commentator');
+    return {
+      transcript,
+      moderatorId: selectedModeratorId || '',
+      moderatorName: moderator?.name || 'Host',
+      moderatorAvatarUrl: moderator?.avatarUrl || '',
+      moderatorPersona: moderator?.persona,
+      commentatorId: selectedCommentatorId || '',
+      commentatorName: commentator?.name || 'Guest',
+      commentatorAvatarUrl: commentator?.avatarUrl || '',
+      commentatorPersona: commentator?.persona,
+    };
+  };
+
   const finishSession = () => {
-    // 会話を保存
-    if (scriptRef.current.length > 0 && selectedModeratorId && selectedCommentatorId) {
-      const conversation: SavedConversation = {
-        id: crypto.randomUUID(),
-        questionText: question.text,
-        messages: scriptRef.current,
-        moderatorId: selectedModeratorId,
-        commentatorId: selectedCommentatorId,
-        createdAt: Date.now()
-      };
-      storageService.saveConversation(conversation);
-      console.info('Conversation saved:', conversation.id);
+    // 会話を保存（エラーが発生しても続行）
+    try {
+      if (scriptRef.current.length > 0 && selectedModeratorId && selectedCommentatorId) {
+        const conversation: SavedConversation = {
+          id: crypto.randomUUID(),
+          questionText: question.text,
+          messages: scriptRef.current,
+          moderatorId: selectedModeratorId,
+          commentatorId: selectedCommentatorId,
+          createdAt: Date.now()
+        };
+        storageService.saveConversation(conversation);
+        console.info('Conversation saved:', conversation.id);
+      }
+    } catch (e) {
+      console.error('Failed to save conversation:', e);
     }
 
-    // 録画が有効な場合は停止してcomplete modeへ遷移
+    // 録画が有効な場合は停止
     if (masterRecorderRef.current && masterRecorderRef.current.state === 'recording') {
       stopRecording(); // 録画停止→onstopでcomplete modeへ
     } else {
-      // 録画がない場合は直接onSessionEndへ
-      const transcript = scriptRef.current.map(m => `${m.role.toUpperCase()}: ${m.text}`).join('\n');
-
-      // Get actual character info for the report
-      const moderator = charactersRef.current.find(c => c.id === 'moderator');
-      const commentator = charactersRef.current.find(c => c.id === 'commentator');
-
-      const result: SessionEndResult = {
-        transcript,
-        moderatorId: selectedModeratorId || '',
-        moderatorName: moderator?.name || 'Host',
-        moderatorAvatarUrl: moderator?.avatarUrl || '',
-        moderatorPersona: moderator?.persona,
-        commentatorId: selectedCommentatorId || '',
-        commentatorName: commentator?.name || 'Guest',
-        commentatorAvatarUrl: commentator?.avatarUrl || '',
-        commentatorPersona: commentator?.persona,
-      };
-
-      onSessionEnd(result);
+      // 録画がない場合もcomplete modeへ遷移
+      setMode('complete');
     }
+  };
+
+  const handleGenerateReport = () => {
+    const result = buildSessionResult();
+    onSessionEnd(result);
   };
 
   // --- Recording Logic (Vertical Video) ---
 
   const startRecording = () => {
+    try {
     if (!recordingCanvasRef.current) return;
 
     const canvas = recordingCanvasRef.current;
@@ -1375,6 +1424,9 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
 
     masterRecorderRef.current.start();
     drawVideoFrame();
+    } catch (e) {
+      console.warn('Recording failed to start, continuing without recording:', e);
+    }
   };
 
   const stopRecording = () => {
@@ -1606,27 +1658,27 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
     const selectedCommentator = availableCharacters.find(c => c.id === selectedCommentatorId);
 
     return (
-      <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-white animate-spring-smooth">
+      <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-gray-50 to-white">
         {/* スクロール領域 */}
-        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-          <div className="p-4 pb-8">
+        <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="p-4 pb-24">
             {/* ヘッダー */}
-            <div className="text-center py-4 animate-spring-fade-up">
+            <div className="text-center py-4">
               <h2 className="font-display font-bold text-2xl uppercase tracking-widest text-gray-800">
-                キャラクター選択
+                {t('debate.char_select')}
               </h2>
               <p className="font-mono text-xs text-gray-500 mt-1">
-                会話に参加するキャラクターを選んでください
+                {t('debate.char_desc')}
               </p>
             </div>
 
             {/* お題表示 */}
-            <div className="bg-white rounded-xl p-4 mb-4 max-w-lg mx-auto shadow-sm border border-gray-200 animate-spring-fade-up stagger-1">
+            <div className="bg-white rounded-xl p-4 mb-4 max-w-lg mx-auto shadow-sm border border-gray-200">
               <p className="text-gray-800 text-sm text-center">{question.text}</p>
             </div>
 
             {/* 選択モード切り替え */}
-            <div className="flex justify-center gap-2 mb-4 animate-spring-fade-up stagger-2">
+            <div className="flex justify-center gap-2 mb-4">
               <button
                 onClick={() => setCharacterSelectionMode('auto')}
                 className={`px-4 py-2.5 rounded-full text-xs font-bold btn-spring ${characterSelectionMode === 'auto'
@@ -1634,7 +1686,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                自動選択
+                {t('debate.auto')}
               </button>
               <button
                 onClick={randomizeCharacters}
@@ -1643,7 +1695,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                ランダム
+                {t('debate.random')}
               </button>
               <button
                 onClick={() => setCharacterSelectionMode('manual')}
@@ -1652,16 +1704,16 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                手動選択
+                {t('debate.manual')}
               </button>
             </div>
 
             {/* 選択中のキャラクター表示 */}
-            <div className="flex justify-center gap-8 mb-6 animate-spring-fade-up stagger-3">
+            <div className="flex justify-center gap-8 mb-6">
               <div className="flex flex-col items-center">
                 <div className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Moderator</div>
                 {selectedModerator ? (
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-purple-500 shadow-lg shadow-purple-500/20 animate-spring-scale">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-purple-500 shadow-lg shadow-purple-500/20">
                     <img src={selectedModerator.avatarUrl} className="w-full h-full object-cover" alt={selectedModerator.name} />
                   </div>
                 ) : (
@@ -1669,12 +1721,12 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                     <span className="text-gray-400 text-2xl">?</span>
                   </div>
                 )}
-                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedModerator?.name || '未選択'}</p>
+                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedModerator?.name || t('debate.unselected')}</p>
               </div>
               <div className="flex flex-col items-center">
                 <div className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Commentator</div>
                 {selectedCommentator ? (
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-red-500 shadow-lg shadow-red-500/20 animate-spring-scale">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-red-500 shadow-lg shadow-red-500/20">
                     <img src={selectedCommentator.avatarUrl} className="w-full h-full object-cover" alt={selectedCommentator.name} />
                   </div>
                 ) : (
@@ -1682,15 +1734,15 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                     <span className="text-gray-400 text-2xl">?</span>
                   </div>
                 )}
-                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedCommentator?.name || '未選択'}</p>
+                <p className="mt-1.5 text-gray-800 text-sm font-bold">{selectedCommentator?.name || t('debate.unselected')}</p>
               </div>
             </div>
 
             {/* キャラクター一覧（手動選択時） */}
             {characterSelectionMode === 'manual' && (
-              <div className="max-w-2xl mx-auto pb-4 animate-spring-fade-up">
+              <div className="max-w-2xl mx-auto pb-4">
                 <div className="text-[10px] text-gray-500 mb-3 uppercase text-center font-bold tracking-wider">
-                  キャラクターをタップして選択
+                  {t('debate.tap_to_select')}
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3">
                   {availableCharacters.map((char) => {
@@ -1778,13 +1830,13 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
         </div>
 
         {/* スタートボタン（固定フッター） */}
-        <div className="shrink-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="shrink-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
           <button
             onClick={startSessionWithCharacters}
             disabled={!selectedModeratorId || !selectedCommentatorId}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed btn-spring shadow-lg shadow-purple-500/25"
           >
-            セッション開始
+            {t('debate.start')}
           </button>
         </div>
       </div>
@@ -2175,7 +2227,7 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
 
         {/* カードリスト */}
         <div className="flex-1 relative" style={{ minHeight: 0 }}>
-          <div className="absolute inset-0 overflow-y-auto p-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="absolute inset-0 overflow-y-auto p-4 space-y-4 pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
           {scriptRef.current.map((msg, index) => {
             const char = charactersRef.current.find(c => c.id === msg.role);
             const audioInfo = editingAudioData.get(msg.id);
@@ -2345,10 +2397,12 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="glass p-8 rounded-2xl text-center max-w-md mx-4">
+        <div className="glass p-8 rounded-2xl text-center max-w-md mx-4 animate-spring-in">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="font-display text-2xl font-bold text-white uppercase mb-2">完成！</h2>
-          <p className="text-gray-400 text-sm mb-6">動画の生成が完了しました</p>
+          <p className="text-gray-400 text-sm mb-6">
+            {generatedVideoBlob ? 'セッションが完了しました' : 'セッションが完了しました'}
+          </p>
 
           {/* 保存ボタン */}
           <div className="space-y-3">
@@ -2362,17 +2416,17 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   link.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold py-4 px-6 rounded-full hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold py-4 px-6 rounded-full hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 btn-spring"
               >
                 📹 動画をダウンロード
               </button>
             )}
 
             <button
-              onClick={finishSession}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-6 rounded-full transition-colors flex items-center justify-center gap-2"
+              onClick={handleGenerateReport}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-full hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 btn-spring"
             >
-              📝 テキスト報告書を生成
+              📝 レポートを生成
             </button>
           </div>
         </div>
@@ -2760,9 +2814,12 @@ export const DebateSession: React.FC<DebateSessionProps> = ({ question, userAvat
                   <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-current`}
                     style={{ borderBottomColor: currentSpeaker === 'moderator' ? '#9333ea' : currentSpeaker === 'user' ? '#2563eb' : '#dc2626' }} />
 
-                  {/* テキスト */}
+                  {/* テキスト - タイプライター効果 */}
                   <p className="font-medium text-base md:text-lg leading-relaxed whitespace-pre-wrap text-center">
-                    {scriptRef.current[currentMessageIndex].text}
+                    {scriptRef.current[currentMessageIndex].text.slice(0, visibleCharCount)}
+                    {visibleCharCount < scriptRef.current[currentMessageIndex].text.length && (
+                      <span className="inline-block w-0.5 h-5 bg-white/70 ml-0.5 animate-pulse align-middle" />
+                    )}
                   </p>
                 </div>
               )}

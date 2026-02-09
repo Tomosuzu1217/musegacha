@@ -79,7 +79,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
   }, [activeTab]);
 
   return (
-    <div className="min-h-[100dvh] bg-[#0a0a14] text-[#e2e2e8] flex flex-col relative selection:bg-purple-500 selection:text-white pb-[env(safe-area-inset-bottom)]">
+    <div className="min-h-[100dvh] bg-[#1c1c3a] text-[#e8e8f0] flex flex-col relative selection:bg-purple-500 selection:text-white pb-[env(safe-area-inset-bottom)]">
       <BackgroundEffects />
 
       {/* Header (Minimal for Mobile) */}
@@ -87,7 +87,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
         <div className="w-full px-4 h-14 flex items-center justify-between max-w-lg mx-auto md:max-w-7xl">
           <h1 className="text-xl font-bold tracking-tighter flex items-center gap-2 font-display uppercase gradient-text-neon">
             MuseGacha
-            <span className="text-[9px] bg-purple-600/30 text-purple-300 px-1.5 py-0.5 ml-1 font-mono rounded-sm border border-purple-500/30 animate-spring-scale">APP</span>
+            <span className="text-[9px] bg-purple-600/30 text-purple-300 px-1.5 py-0.5 ml-1 font-mono rounded-sm border border-purple-500/30">APP</span>
           </h1>
           <div className="flex items-center gap-1.5 ml-auto">
             {/* Offline indicator */}
@@ -150,14 +150,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 mb-20 md:mb-0 relative z-10 overflow-x-hidden">
-        <div key={activeTab} className="animate-tab-in">
+      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 pb-24 relative z-10 overflow-x-hidden flex flex-col">
+        <div key={activeTab} className="animate-tab-in flex-1 min-h-0">
           {children}
         </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 w-full glass-dark border-t border-white/5 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
+      <nav className="bottom-nav fixed bottom-0 left-0 w-full border-t border-white/10 z-50 pb-[env(safe-area-inset-bottom)]">
         <div ref={navRef} className="flex justify-around items-center h-16 max-w-lg mx-auto relative">
           {/* Animated tab indicator */}
           <div

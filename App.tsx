@@ -11,11 +11,13 @@ import { CollabSession } from './components/CollabSession';
 import { storageService } from './services/storageService';
 import { apiKeyRotation } from './services/apiKeyRotation';
 import { Question, FilterState, PRESET_TAGS } from './types';
+import { useI18n } from './services/i18n';
 
 // @ts-ignore - Defined in vite.config.ts
 declare const __GEMINI_API_KEY__: string;
 
 const App: React.FC = () => {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'gacha' | 'consult' | 'manage' | 'history' | 'collab'>('gacha');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -183,13 +185,13 @@ const App: React.FC = () => {
                       className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 border border-white/10 px-3 py-2 rounded-full glass-dark hover-glow btn-spring"
                     >
                       <span className={`w-2 h-2 rounded-full transition-colors ${hasActiveFilters ? 'bg-purple-500 shadow-[0_0_6px_rgba(139,92,246,0.5)]' : 'bg-gray-600'}`}></span>
-                      {showFilters ? 'Hide Filters' : 'Filter Options'}
+                      {showFilters ? t('gacha.hide_filters') : t('gacha.filter_options')}
                     </button>
 
                     {showFilters && (
                       <div className="mt-4 p-4 card-cinematic rounded-xl space-y-4 animate-spring-snappy">
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">Difficulty</label>
+                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">{t('filter.difficulty')}</label>
                           <div className="flex gap-2">
                             {['light', 'normal', 'heavy'].map(d => (
                               <button
@@ -204,7 +206,7 @@ const App: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">Topic</label>
+                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">{t('filter.topic')}</label>
                           <div className="flex flex-wrap gap-2">
                             {PRESET_TAGS.map(t => (
                               <button
@@ -223,9 +225,9 @@ const App: React.FC = () => {
                             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                             className={`px-3 py-1.5 text-[10px] uppercase font-bold border rounded-full btn-spring ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                           >
-                            ★ Favorites
+                            ★ {t('gacha.favorites_only')}
                           </button>
-                          <button onClick={clearFilters} className="text-[10px] font-bold text-red-400 underline btn-spring">RESET ALL</button>
+                          <button onClick={clearFilters} className="text-[10px] font-bold text-red-400 underline btn-spring">{t('filter.reset')}</button>
                         </div>
                       </div>
                     )}
@@ -248,14 +250,14 @@ const App: React.FC = () => {
                           onClick={startWriting}
                           className="w-full py-4 btn-neon font-display font-bold text-lg uppercase tracking-widest btn-spring rounded-xl shadow-xl animate-glow-breathe"
                         >
-                          Start Session
+                          {t('gacha.start')}
                         </button>
                         <button
                           onClick={spinGacha}
                           disabled={isSpinning}
                           className="w-full py-3 bg-white/5 text-gray-400 border border-white/10 font-mono text-xs uppercase tracking-widest hover:bg-white/10 btn-spring rounded-lg disabled:opacity-50"
                         >
-                          Skip / Next
+                          {t('gacha.skip')}
                         </button>
                       </div>
                     </div>
@@ -263,9 +265,9 @@ const App: React.FC = () => {
                     <div className="flex flex-col items-center justify-center flex-1 py-12">
                       {noQuestionsAvailable ? (
                         <div className="border border-amber-500/30 p-8 bg-amber-900/20 rounded-xl card-cinematic text-center w-full animate-spring-snappy">
-                          <p className="font-bold uppercase mb-2 text-xl font-display text-white">No Matches</p>
+                          <p className="font-bold uppercase mb-2 text-xl font-display text-white">{t('gacha.no_matches')}</p>
                           <button onClick={clearFilters} className="text-xs font-bold underline p-2 text-amber-400 btn-spring">
-                            Reset Filters
+                            {t('gacha.reset_filters')}
                           </button>
                         </div>
                       ) : (
@@ -277,14 +279,14 @@ const App: React.FC = () => {
                             MUSE<br />GACHA
                           </h2>
                           <p className="font-mono text-xs text-gray-500 mb-10 text-center max-w-[220px]">
-                            Tap below to spin.
+                            {t('gacha.tap_to_spin')}
                           </p>
                           <button
                             onClick={spinGacha}
                             disabled={isSpinning}
                             className="w-full max-w-xs py-5 btn-neon text-lg font-bold font-display uppercase tracking-widest rounded-xl shadow-xl btn-spring animate-glow-breathe disabled:opacity-50"
                           >
-                            SPIN
+                            {t('gacha.spin')}
                           </button>
                         </div>
                       )}
@@ -294,8 +296,8 @@ const App: React.FC = () => {
               </div>
             ) : (
               // Editor takes full screen (z-[60] to cover bottom nav z-50)
-              <div className="fixed inset-0 z-[60] bg-[#0a0a14] flex flex-col">
-                <Editor question={currentQuestion} onClose={handleEditorClose} />
+              <div className="fixed inset-0 z-[60] bg-[#1c1c3a] flex flex-col">
+                <Editor question={currentQuestion!} onClose={handleEditorClose} />
               </div>
             )}
           </div>

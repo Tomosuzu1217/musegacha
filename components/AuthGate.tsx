@@ -48,7 +48,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
   if (authState === 'loading') {
     return (
-      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center">
+      <div className="min-h-[100dvh] bg-[#1c1c3a] flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-4 animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(139,92,246,0.3)]">
           <span className="font-display font-bold text-xl text-purple-300">?</span>
         </div>
@@ -59,7 +59,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
   if (authState === 'migrating') {
     return (
-      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center">
+      <div className="min-h-[100dvh] bg-[#1c1c3a] flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.3)]">
           <span className="font-display font-bold text-xl text-purple-300">M</span>
         </div>
@@ -70,7 +70,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
   if (authState === 'signed-out') {
     return (
-      <div className="min-h-[100dvh] bg-[#0a0a14] flex flex-col items-center justify-center px-6">
+      <div className="min-h-[100dvh] bg-[#1c1c3a] flex flex-col items-center justify-center px-6">
         <div className="w-20 h-20 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(139,92,246,0.3)]">
           <span className="font-display font-bold text-3xl text-purple-300">?</span>
         </div>
