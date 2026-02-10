@@ -471,7 +471,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-[#1c1c3a] relative" style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 z-[55] flex flex-col w-full bg-[#1c1c3a]">
 
       {/* Condensed Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 glass-dark z-50 shrink-0">
@@ -483,7 +483,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
           {mode === 'debate' && (
             <button
               onClick={toggleRecording}
-              className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${isRecording
+              className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${isRecording
                 ? 'bg-red-600 border-red-600 animate-pulse'
                 : 'bg-white/10 text-white border-white/20'
                 }`}
@@ -491,7 +491,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
               <div className={`w-3 h-3 rounded-full ${isRecording ? 'bg-white' : 'bg-red-600'}`}></div>
             </button>
           )}
-          <button onClick={onClose} className="px-3 py-1 bg-white/10 text-white border border-white/10 hover:bg-white/20 text-xs font-bold uppercase rounded-sm">Close</button>
+          <button onClick={onClose} className="px-4 py-2 bg-white/10 text-white border border-white/10 hover:bg-white/20 text-xs font-bold uppercase rounded btn-spring">Close</button>
         </div>
       </div>
 
@@ -509,7 +509,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
 
             <div style={{ padding: '0 16px 16px' }}>
               {/* STAGE THEME SELECTION */}
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 {STAGE_THEMES.map((theme) => (
                   <button
                     key={theme.id}
@@ -555,8 +555,8 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                 style={{
                   display: 'block',
                   width: '100%',
-                  padding: '20px',
-                  fontSize: '20px',
+                  padding: '16px',
+                  fontSize: '18px',
                   fontWeight: 'bold',
                   color: '#ffffff',
                   background: 'linear-gradient(to right, #9333ea, #ec4899)',
@@ -631,7 +631,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                   <div className={`w-8 h-0.5 ${generationProgress >= 100 ? 'bg-purple-500' : 'bg-white/10'}`} />
                   <div className={`w-3 h-3 rounded-full ${generationProgress >= 100 ? 'bg-purple-500' : 'bg-white/10'}`} />
                 </div>
-                <div className="flex gap-6 mt-2 text-[9px] uppercase font-bold text-gray-400">
+                <div className="flex gap-3 sm:gap-6 mt-2 text-[10px] uppercase font-bold text-gray-400">
                   <span>分析</span>
                   <span>生成</span>
                   <span>感想</span>
@@ -702,13 +702,13 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                     <div className="w-full max-w-sm flex-1 flex items-center justify-center mb-6">
                       <div
                         ref={cardRef}
-                        className={`w-full aspect-[4/5] ${selectedTheme.bg} ${selectedTheme.text} p-8 flex flex-col relative shadow-xl overflow-hidden`}
+                        className={`w-full aspect-[4/5] ${selectedTheme.bg} ${selectedTheme.text} p-4 sm:p-6 md:p-8 flex flex-col relative shadow-xl overflow-hidden`}
                         style={{
                           backgroundImage: selectedTheme.id === 'paper' ? `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23000000' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")` : undefined
                         }}
                       >
                         {/* Watermark/Grid overlay */}
-                        <div className={`absolute inset-0 border-[16px] ${selectedTheme.border} opacity-50 pointer-events-none`}></div>
+                        <div className={`absolute inset-0 border-[8px] sm:border-[12px] md:border-[16px] ${selectedTheme.border} opacity-50 pointer-events-none`}></div>
 
                         <div className="flex-1 flex flex-col justify-center">
                           <div className="mb-4 pb-3 border-b border-current opacity-80">
@@ -729,7 +729,7 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                             <div className="mt-3 pt-3 border-t border-current/20 space-y-3">
                               {articleData.comments.map((comment, index) => (
                                 <div key={index} className="flex items-start gap-3">
-                                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-current/30 shrink-0 shadow-sm">
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-current/30 shrink-0 shadow-sm">
                                     {comment.avatarUrl ? (
                                       <img src={comment.avatarUrl} className="w-full h-full object-cover" alt={comment.name} />
                                     ) : (
@@ -814,11 +814,11 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                             {isEditingNote ? 'Preview' : 'Edit'}
                           </button>
                           {isEditingNote && (
-                            <div className="flex gap-1">
-                              <button onClick={() => insertMarkdown('**bold**')} className="px-2 py-1 text-[10px] font-bold text-gray-400 bg-white/5 rounded btn-spring">B</button>
-                              <button onClick={() => insertMarkdown('*italic*')} className="px-2 py-1 text-[10px] italic text-gray-400 bg-white/5 rounded btn-spring">I</button>
-                              <button onClick={() => insertMarkdown('\n## ')} className="px-2 py-1 text-[10px] text-gray-400 bg-white/5 rounded btn-spring">H2</button>
-                              <button onClick={() => insertMarkdown('\n- ')} className="px-2 py-1 text-[10px] text-gray-400 bg-white/5 rounded btn-spring">List</button>
+                            <div className="flex gap-1.5">
+                              <button onClick={() => insertMarkdown('**bold**')} className="px-3 py-2 text-xs font-bold text-gray-400 bg-white/5 rounded btn-spring">B</button>
+                              <button onClick={() => insertMarkdown('*italic*')} className="px-3 py-2 text-xs italic text-gray-400 bg-white/5 rounded btn-spring">I</button>
+                              <button onClick={() => insertMarkdown('\n## ')} className="px-3 py-2 text-xs text-gray-400 bg-white/5 rounded btn-spring">H2</button>
+                              <button onClick={() => insertMarkdown('\n- ')} className="px-3 py-2 text-xs text-gray-400 bg-white/5 rounded btn-spring">List</button>
                             </div>
                           )}
                         </div>
@@ -827,11 +827,11 @@ export const Editor: React.FC<EditorProps> = ({ question, onClose }) => {
                           <textarea
                             value={editableNoteText}
                             onChange={(e) => setEditableNoteText(e.target.value)}
-                            className="w-full min-h-[60vh] p-6 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 font-mono leading-7 resize-y focus:outline-none focus:border-purple-500/50"
+                            className="w-full min-h-[40vh] sm:min-h-[60vh] p-4 sm:p-6 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 font-mono leading-7 resize-y focus:outline-none focus:border-purple-500/50"
                             spellCheck={false}
                           />
                         ) : (
-                          <div className={`card-cinematic rounded-lg shadow-lg p-6 md:p-10 ${selectedFont.class}`}>
+                          <div className={`card-cinematic rounded-lg shadow-lg p-4 sm:p-6 md:p-10 ${selectedFont.class}`}>
                             {/* Article Title */}
                             <h1 className="text-xl md:text-2xl font-bold leading-tight mb-6 pb-4 border-b border-white/10 text-white">
                               {noteArticleData.title}

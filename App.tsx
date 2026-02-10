@@ -165,7 +165,7 @@ const App: React.FC = () => {
           <div className="fixed top-16 right-4 z-50">
             <button
               onClick={() => setIsApiKeyModalOpen(true)}
-              className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg glow-red text-lg font-bold"
+              className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse shadow-lg glow-red text-lg font-bold"
             >
               !
             </button>
@@ -191,13 +191,13 @@ const App: React.FC = () => {
                     {showFilters && (
                       <div className="mt-4 p-4 card-cinematic rounded-xl space-y-4 animate-spring-snappy">
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">{t('filter.difficulty')}</label>
+                          <label className="text-[11px] uppercase font-bold text-gray-400 block mb-2">{t('filter.difficulty')}</label>
                           <div className="flex gap-2">
                             {['light', 'normal', 'heavy'].map(d => (
                               <button
                                 key={d}
                                 onClick={() => setFilters(prev => ({ ...prev, difficulty: prev.difficulty === d ? null : d as any }))}
-                                className={`flex-1 py-2.5 text-[10px] uppercase font-bold border rounded-lg btn-spring ${filters.difficulty === d ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
+                                className={`flex-1 py-2.5 text-[11px] uppercase font-bold border rounded-lg btn-spring ${filters.difficulty === d ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                               >
                                 {d}
                               </button>
@@ -206,13 +206,13 @@ const App: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 block mb-2">{t('filter.topic')}</label>
+                          <label className="text-[11px] uppercase font-bold text-gray-400 block mb-2">{t('filter.topic')}</label>
                           <div className="flex flex-wrap gap-2">
                             {PRESET_TAGS.map(t => (
                               <button
                                 key={t}
                                 onClick={() => setFilters(prev => ({ ...prev, tag: prev.tag === t ? null : t }))}
-                                className={`px-3 py-1.5 text-[10px] uppercase font-bold border rounded-full btn-spring ${filters.tag === t ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
+                                className={`px-3 py-2 text-[11px] uppercase font-bold border rounded-full btn-spring ${filters.tag === t ? 'bg-purple-600/30 text-purple-300 border-purple-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                               >
                                 {t}
                               </button>
@@ -223,11 +223,11 @@ const App: React.FC = () => {
                         <div className="pt-2 flex justify-between items-center">
                           <button
                             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                            className={`px-3 py-1.5 text-[10px] uppercase font-bold border rounded-full btn-spring ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
+                            className={`px-3 py-2 text-[11px] uppercase font-bold border rounded-full btn-spring ${showFavoritesOnly ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50' : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'}`}
                           >
                             ★ {t('gacha.favorites_only')}
                           </button>
-                          <button onClick={clearFilters} className="text-[10px] font-bold text-red-400 underline btn-spring">{t('filter.reset')}</button>
+                          <button onClick={clearFilters} className="text-[11px] font-bold text-red-400 underline btn-spring">{t('filter.reset')}</button>
                         </div>
                       </div>
                     )}
@@ -264,7 +264,7 @@ const App: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center flex-1 py-12">
                       {noQuestionsAvailable ? (
-                        <div className="border border-amber-500/30 p-8 bg-amber-900/20 rounded-xl card-cinematic text-center w-full animate-spring-snappy">
+                        <div className="border border-amber-500/30 p-4 sm:p-8 bg-amber-900/20 rounded-xl card-cinematic text-center w-full animate-spring-snappy">
                           <p className="font-bold uppercase mb-2 text-xl font-display text-white">{t('gacha.no_matches')}</p>
                           <button onClick={clearFilters} className="text-xs font-bold underline p-2 text-amber-400 btn-spring">
                             {t('gacha.reset_filters')}
@@ -272,10 +272,10 @@ const App: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col items-center w-full animate-spring-fade-up">
-                          <div className="w-24 h-24 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-6 animate-[spin_12s_linear_infinite] shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-purple-500/50 rounded-full flex items-center justify-center mb-6 animate-[spin_12s_linear_infinite] shadow-[0_0_20px_rgba(139,92,246,0.3)]">
                             <span className="font-display font-bold text-4xl text-purple-300">?</span>
                           </div>
-                          <h2 className="text-5xl font-bold font-display tracking-tighter mb-4 text-center gradient-text-neon">
+                          <h2 className="text-4xl sm:text-5xl font-bold font-display tracking-tighter mb-4 text-center gradient-text-neon">
                             MUSE<br />GACHA
                           </h2>
                           <p className="font-mono text-xs text-gray-500 mb-10 text-center max-w-[220px]">

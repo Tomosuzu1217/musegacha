@@ -447,8 +447,8 @@
     }
 
     .particle-orb-1 {
-      width: 300px;
-      height: 300px;
+      width: min(300px, 80vw);
+      height: min(300px, 80vw);
       background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
       top: 10%;
       left: -5%;
@@ -456,8 +456,8 @@
     }
 
     .particle-orb-2 {
-      width: 250px;
-      height: 250px;
+      width: min(250px, 70vw);
+      height: min(250px, 70vw);
       background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
       top: 60%;
       right: -5%;
@@ -465,8 +465,8 @@
     }
 
     .particle-orb-3 {
-      width: 200px;
-      height: 200px;
+      width: min(200px, 60vw);
+      height: min(200px, 60vw);
       background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
       bottom: 10%;
       left: 30%;
@@ -2066,6 +2066,7 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(255, 255, 255, 0.05);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     [data-theme="light"] .bottom-nav {
       background: rgba(255, 255, 255, 0.97);
@@ -2156,6 +2157,56 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+
+    /* ===== Mobile Performance & Layout Optimizations ===== */
+    @media (max-width: 480px) {
+      /* Reduce blur for better performance on mobile GPUs */
+      .glass {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+      .glass-dark {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .glass-premium {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      /* Reduce/disable heavy decorative animations */
+      .particle-orb {
+        filter: blur(20px);
+        animation-duration: 30s;
+      }
+      .bg-gradient-mesh {
+        animation: none;
+        opacity: 0.4;
+      }
+      .floating-dot {
+        animation-duration: 20s;
+      }
+
+      /* Simplify box shadows */
+      .glass-premium {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Ensure minimum touch targets */
+      .btn-spring {
+        min-height: 44px;
+      }
+      .chat-send-btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      /* Stagger delays: cap at 200ms on mobile for snappier feel */
+      .stagger-5 { animation-delay: 200ms !important; }
+      .stagger-6 { animation-delay: 200ms !important; }
+      .stagger-7 { animation-delay: 200ms !important; }
+      .stagger-8 { animation-delay: 200ms !important; }
     }
   </style>
   <script type="importmap">

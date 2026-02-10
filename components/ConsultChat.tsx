@@ -358,7 +358,7 @@ export const ConsultChat: React.FC = () => {
                             {session.messages.length} msgs
                           </span>
                           {session.generatedQuestionIds.length > 0 && (
-                            <span className="chat-badge text-[9px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-md font-bold">
+                            <span className="chat-badge text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-md font-bold">
                               {session.generatedQuestionIds.length}Q
                             </span>
                           )}
@@ -366,7 +366,7 @@ export const ConsultChat: React.FC = () => {
                         {session.themes.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {session.themes.slice(0, 4).map((theme, i) => (
-                              <span key={i} className="text-[9px] px-2 py-0.5 bg-white/[0.04] border border-white/[0.06] text-gray-400 rounded-md font-mono">
+                              <span key={i} className="text-[10px] px-2 py-0.5 bg-white/[0.04] border border-white/[0.06] text-gray-400 rounded-md font-mono">
                                 {theme}
                               </span>
                             ))}
@@ -417,7 +417,7 @@ export const ConsultChat: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Core Values</p>
+                  <p className="text-[10px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Core Values</p>
                   <div className="flex flex-wrap gap-2">
                     {coreInsights.coreValues.map((v, i) => (
                       <span key={i} className="px-3 py-1.5 bg-purple-600/15 text-purple-300 border border-purple-500/20 text-xs font-medium rounded-lg">{v}</span>
@@ -426,7 +426,7 @@ export const ConsultChat: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Patterns</p>
+                  <p className="text-[10px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Patterns</p>
                   <div className="space-y-2">
                     {coreInsights.patterns.map((p, i) => (
                       <div key={i} className="flex items-start gap-3">
@@ -440,7 +440,7 @@ export const ConsultChat: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Growth Areas</p>
+                  <p className="text-[10px] font-bold font-mono text-gray-500 uppercase mb-3 tracking-wider">Growth Areas</p>
                   <div className="space-y-2">
                     {coreInsights.growthAreas.map((g, i) => (
                       <div key={i} className="flex items-start gap-3">
@@ -451,7 +451,7 @@ export const ConsultChat: React.FC = () => {
                   </div>
                 </div>
 
-                <p className="text-[9px] font-mono text-gray-600 text-right pt-2">
+                <p className="text-[10px] font-mono text-gray-600 text-right pt-2">
                   {new Date(coreInsights.generatedAt).toLocaleDateString()} / {coreInsights.basedOnSessions} sessions
                 </p>
               </div>
@@ -476,20 +476,20 @@ export const ConsultChat: React.FC = () => {
               <div className="grid grid-cols-3 gap-3 mb-5">
                 <div className="stat-card card-spring text-center p-4 animate-card-stagger stagger-1">
                   <p className="text-xl font-bold font-display gradient-text">{profile.totalConsultations}</p>
-                  <p className="text-[9px] text-gray-500 font-mono uppercase mt-1">Consults</p>
+                  <p className="text-[10px] text-gray-500 font-mono uppercase mt-1">Consults</p>
                 </div>
                 <div className="stat-card card-spring text-center p-4 animate-card-stagger stagger-2">
                   <p className="text-xl font-bold font-display gradient-text">{profile.totalQuestionsGenerated}</p>
-                  <p className="text-[9px] text-gray-500 font-mono uppercase mt-1">Questions</p>
+                  <p className="text-[10px] text-gray-500 font-mono uppercase mt-1">Questions</p>
                 </div>
                 <div className="stat-card card-spring text-center p-4 animate-card-stagger stagger-3">
                   <p className="text-xl font-bold font-display gradient-text">{profile.totalSessionsCompleted}</p>
-                  <p className="text-[9px] text-gray-500 font-mono uppercase mt-1">Sessions</p>
+                  <p className="text-[10px] text-gray-500 font-mono uppercase mt-1">Sessions</p>
                 </div>
               </div>
               {topThemes.length > 0 && (
                 <div>
-                  <p className="text-[9px] font-mono text-gray-500 mb-3 tracking-wider">TOP THEMES</p>
+                  <p className="text-[10px] font-mono text-gray-500 mb-3 tracking-wider">TOP THEMES</p>
                   <div className="space-y-2">
                     {topThemes.map(([theme, count]) => (
                       <div key={theme} className="flex items-center gap-3">
@@ -549,7 +549,7 @@ export const ConsultChat: React.FC = () => {
             {activeSession && activeSession.themes.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {activeSession.themes.slice(0, 3).map((theme, i) => (
-                  <span key={i} className="text-[9px] px-2 py-0.5 bg-white/[0.04] border border-white/[0.06] text-gray-500 rounded-md font-mono">
+                  <span key={i} className="text-[10px] px-2 py-0.5 bg-white/[0.04] border border-white/[0.06] text-gray-500 rounded-md font-mono">
                     {theme}
                   </span>
                 ))}
@@ -609,14 +609,14 @@ export const ConsultChat: React.FC = () => {
               </div>
             )}
             <div
-              className={`max-w-[80%] px-4 py-3 ${
+              className={`max-w-[85%] sm:max-w-[80%] px-4 py-3 ${
                 msg.role === 'user'
                   ? 'chat-bubble-user'
                   : 'chat-bubble-ai'
               }`}
             >
               <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-              <p className={`text-[9px] mt-2 ${msg.role === 'user' ? 'text-white/40' : 'text-gray-600'} font-mono`}>
+              <p className={`text-[10px] mt-2 ${msg.role === 'user' ? 'text-white/40' : 'text-gray-600'} font-mono`}>
                 {formatTime(msg.timestamp)}
               </p>
             </div>
@@ -657,7 +657,7 @@ export const ConsultChat: React.FC = () => {
             placeholder="Share your thoughts..."
             rows={1}
             className="chat-input-inner flex-1 resize-none px-3 py-2.5 text-sm leading-relaxed"
-            style={{ maxHeight: '120px', minHeight: '40px' }}
+            style={{ maxHeight: '120px', minHeight: '44px' }}
             disabled={isProcessing}
           />
           <button

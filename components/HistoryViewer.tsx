@@ -122,7 +122,7 @@ export const HistoryViewer: React.FC = () => {
               className="card-cinematic rounded-xl p-6 hover:bg-white/5 hover:border-purple-500/30 hover-glow cursor-pointer group h-full flex flex-col justify-between card-spring animate-card-stagger"
             >
               <div>
-                <div className="flex justify-between items-center mb-4 opacity-50 text-[10px] font-mono uppercase">
+                <div className="flex justify-between items-center mb-4 opacity-50 text-[11px] font-mono uppercase">
                    <span>{formatDate(ans.createdAt)}</span>
                    <span>{ans.format}</span>
                 </div>
@@ -130,7 +130,7 @@ export const HistoryViewer: React.FC = () => {
                   {ans.questionText}
                 </h3>
               </div>
-              <div className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="text-[11px] font-mono uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 記事を読む <span>→</span>
               </div>
             </div>

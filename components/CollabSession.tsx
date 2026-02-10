@@ -171,13 +171,13 @@ export const CollabSession: React.FC = () => {
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 {!isMe && (
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600/25 to-cyan-600/25 border border-white/5 flex items-center justify-center flex-shrink-0 mr-2 mt-1">
-                    <span className="text-[9px] font-bold text-blue-400">{msg.userName.charAt(0)}</span>
+                    <span className="text-[10px] font-bold text-blue-400">{msg.userName.charAt(0)}</span>
                   </div>
                 )}
                 <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${isMe ? 'bg-purple-600/20 text-gray-200 rounded-tr-sm' : 'bg-white/[0.06] text-gray-300 rounded-tl-sm'}`}>
-                  {!isMe && <p className="text-[9px] font-bold text-gray-500 mb-1">{msg.userName}</p>}
+                  {!isMe && <p className="text-[10px] font-bold text-gray-500 mb-1">{msg.userName}</p>}
                   <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                  <p className={`text-[9px] mt-1.5 font-mono ${isMe ? 'text-purple-400/50' : 'text-gray-600'}`}>{formatTime(msg.timestamp)}</p>
+                  <p className={`text-[10px] mt-1.5 font-mono ${isMe ? 'text-purple-400/50' : 'text-gray-600'}`}>{formatTime(msg.timestamp)}</p>
                 </div>
               </div>
             );

@@ -87,12 +87,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
         <div className="w-full px-4 h-14 flex items-center justify-between max-w-lg mx-auto md:max-w-7xl">
           <h1 className="text-xl font-bold tracking-tighter flex items-center gap-2 font-display uppercase gradient-text-neon">
             MuseGacha
-            <span className="text-[9px] bg-purple-600/30 text-purple-300 px-1.5 py-0.5 ml-1 font-mono rounded-sm border border-purple-500/30">APP</span>
+            <span className="text-[10px] bg-purple-600/30 text-purple-300 px-1.5 py-0.5 ml-1 font-mono rounded-sm border border-purple-500/30">APP</span>
           </h1>
           <div className="flex items-center gap-1.5 ml-auto">
             {/* Offline indicator */}
             {isOffline && (
-              <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full animate-pulse">
+              <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-full animate-pulse">
                 {t('common.offline')}
               </span>
             )}
@@ -101,7 +101,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             {deferredPrompt && (
               <button
                 onClick={handleInstall}
-                className="text-[9px] font-mono text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-1 rounded-full btn-spring"
+                className="text-[10px] font-mono text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-1.5 rounded-full btn-spring"
               >
                 {t('common.install')}
               </button>
@@ -110,7 +110,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             {/* Language toggle */}
             <button
               onClick={() => setLocale(locale === 'ja' ? 'en' : 'ja')}
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring text-[10px] font-bold font-mono"
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring text-[11px] font-bold font-mono"
               title="Toggle Language"
             >
               {locale === 'ja' ? 'EN' : 'JP'}
@@ -119,7 +119,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             {/* Theme toggle */}
             <button
               onClick={() => setThemeMode(prev => prev === 'dark' ? 'light' : 'dark')}
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring"
+              className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 btn-spring"
               title={themeMode === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               <span className="text-base">{themeMode === 'dark' ? '☀️' : '🌙'}</span>
@@ -157,7 +157,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="bottom-nav fixed bottom-0 left-0 w-full border-t border-white/10 z-50 pb-[env(safe-area-inset-bottom)]">
+      <nav className="bottom-nav fixed bottom-0 left-0 w-full border-t border-white/10 z-50">
         <div ref={navRef} className="flex justify-around items-center h-16 max-w-lg mx-auto relative">
           {/* Animated tab indicator */}
           <div
@@ -176,7 +176,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                 <span className={`text-2xl transition-transform duration-300 ${isActive ? '-translate-y-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] scale-110' : 'scale-100'}`}>
                   {tab.icon}
                 </span>
-                <span className={`text-[9px] font-bold uppercase tracking-widest transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
                   {tab.label}
                 </span>
               </button>

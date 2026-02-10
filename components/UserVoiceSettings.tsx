@@ -779,6 +779,30 @@ const UserVoiceSettings: React.FC<UserVoiceSettingsProps> = ({ onClose, onConfig
           color: #9ca3af;
           line-height: 1.6;
         }
+
+        @media (max-width: 480px) {
+          .user-voice-settings {
+            padding: 14px;
+          }
+          .settings-header h2 {
+            font-size: 1.25rem;
+          }
+          .voice-option {
+            padding: 12px;
+            gap: 10px;
+          }
+          .close-button {
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .recording-active button, .recording-preview button {
+            padding: 10px 16px;
+            min-height: 44px;
+          }
+        }
       `}</style>
         </div>
     );
