@@ -150,7 +150,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 pb-24 relative z-10 overflow-x-hidden flex flex-col">
+      <main className="flex-1 w-full max-w-lg mx-auto md:max-w-7xl px-4 py-6 pb-20 relative z-10 overflow-x-hidden flex flex-col">
         <div key={activeTab} className="animate-tab-in flex-1 min-h-0">
           {children}
         </div>
@@ -158,7 +158,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
       {/* Mobile Bottom Navigation */}
       <nav className="bottom-nav fixed bottom-0 left-0 w-full border-t border-white/10 z-50">
-        <div ref={navRef} className="flex justify-around items-center h-16 max-w-lg mx-auto relative">
+        <div ref={navRef} className="flex justify-around items-center h-16 max-w-lg mx-auto md:max-w-7xl relative">
           {/* Animated tab indicator */}
           <div
             className="tab-indicator"

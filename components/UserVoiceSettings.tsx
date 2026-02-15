@@ -3,7 +3,7 @@
  * ユーザー音声オプションの設定UI
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { UserVoiceType, CloneVoice } from '../types';
 import { userVoiceService, GEMINI_VOICE_OPTIONS } from '../services/userVoiceService';
 import { elevenLabsService } from '../services/elevenLabsService';
@@ -33,6 +33,16 @@ const UserVoiceSettings: React.FC<UserVoiceSettingsProps> = ({ onClose, onConfig
     const [newVoiceName, setNewVoiceName] = useState('');
     const [isCreatingClone, setIsCreatingClone] = useState(false);
     const [cloneError, setCloneError] = useState<string>('');
+    const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Cleanup recording interval on unmount
+    useEffect(() => {
+        return () => {
+            if (recordingIntervalRef.current) {
+                clearInterval(recordingIntervalRef.current);
+            }
+        };
+    }, []);
 
     // Load initial config
     useEffect(() => {
@@ -104,12 +114,9 @@ const UserVoiceSettings: React.FC<UserVoiceSettingsProps> = ({ onClose, onConfig
             setRecordingDuration(0);
 
             // Update duration every second
-            const interval = setInterval(() => {
+            recordingIntervalRef.current = setInterval(() => {
                 setRecordingDuration(prev => prev + 1);
             }, 1000);
-
-            // Store interval ID for cleanup
-            (window as any).__voiceRecordingInterval = interval;
         } catch (error: any) {
             setCloneError(error.message || '録音を開始できませんでした');
         }
@@ -123,8 +130,9 @@ const UserVoiceSettings: React.FC<UserVoiceSettingsProps> = ({ onClose, onConfig
             setIsRecording(false);
 
             // Clear interval
-            if ((window as any).__voiceRecordingInterval) {
-                clearInterval((window as any).__voiceRecordingInterval);
+            if (recordingIntervalRef.current) {
+                clearInterval(recordingIntervalRef.current);
+                recordingIntervalRef.current = null;
             }
         } catch (error: any) {
             setCloneError(error.message || '録音を停止できませんでした');

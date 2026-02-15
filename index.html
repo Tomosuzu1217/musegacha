@@ -100,12 +100,17 @@
       padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
     }
 
+    html {
+      overflow-x: hidden;
+    }
+
     body {
       font-family: var(--font-body);
       background-color: #1c1c3a;
       color: #ededf5;
       -webkit-font-smoothing: antialiased;
       overscroll-behavior-y: none;
+      overflow-x: hidden;
     }
 
     h1,
@@ -827,16 +832,16 @@
     }
 
     .light-spot-1 {
-      width: 400px;
-      height: 400px;
+      width: min(400px, 100vw);
+      height: min(400px, 100vw);
       background: #3b82f6;
       top: -10%;
       left: -10%;
     }
 
     .light-spot-2 {
-      width: 300px;
-      height: 300px;
+      width: min(300px, 80vw);
+      height: min(300px, 80vw);
       background: #8b5cf6;
       bottom: -10%;
       right: -10%;
@@ -966,8 +971,8 @@
         transform: translate(-50%, -50%);
       }
       100% {
-        width: 400px;
-        height: 400px;
+        width: min(400px, 90vw);
+        height: min(400px, 90vw);
         opacity: 0;
         transform: translate(-50%, -50%);
       }
@@ -1085,9 +1090,9 @@
       animation: bgm-ring-rotate linear infinite;
     }
 
-    .bgm-ring:nth-child(1) { width: 200px; height: 200px; animation-duration: 30s; }
-    .bgm-ring:nth-child(2) { width: 300px; height: 300px; animation-duration: 25s; animation-direction: reverse; }
-    .bgm-ring:nth-child(3) { width: 400px; height: 400px; animation-duration: 35s; }
+    .bgm-ring:nth-child(1) { width: min(200px, 60vw); height: min(200px, 60vw); animation-duration: 30s; }
+    .bgm-ring:nth-child(2) { width: min(300px, 85vw); height: min(300px, 85vw); animation-duration: 25s; animation-direction: reverse; }
+    .bgm-ring:nth-child(3) { width: min(400px, 95vw); height: min(400px, 95vw); animation-duration: 35s; }
 
     @keyframes bgm-ring-rotate {
       0% { transform: rotate(0deg); }
@@ -1230,8 +1235,8 @@
       pointer-events: none;
     }
 
-    .deco-ring:nth-child(1) { width: 300px; height: 300px; animation-duration: 50s; }
-    .deco-ring:nth-child(2) { width: 400px; height: 400px; animation-duration: 70s; animation-direction: reverse; }
+    .deco-ring:nth-child(1) { width: min(300px, 85vw); height: min(300px, 85vw); animation-duration: 50s; }
+    .deco-ring:nth-child(2) { width: min(400px, 95vw); height: min(400px, 95vw); animation-duration: 70s; animation-direction: reverse; }
 
     @keyframes deco-spin {
       0% { transform: translate(-50%, -50%) rotate(0deg); }
@@ -2188,6 +2193,11 @@
         animation-duration: 20s;
       }
 
+      /* Reduce heavy blur on light spots */
+      .light-spot {
+        filter: blur(40px);
+      }
+
       /* Simplify box shadows */
       .glass-premium {
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -2207,6 +2217,15 @@
       .stagger-6 { animation-delay: 200ms !important; }
       .stagger-7 { animation-delay: 200ms !important; }
       .stagger-8 { animation-delay: 200ms !important; }
+    }
+
+    /* ===== Reduced Motion Accessibility ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
   <script type="importmap">

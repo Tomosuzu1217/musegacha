@@ -77,7 +77,7 @@ export const ActivityLogView: React.FC = () => {
   return (
     <div className="animate-spring-fade-up">
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="text-center p-4 card-cinematic rounded-xl card-spring animate-card-stagger stagger-1">
           <p className="text-2xl font-bold font-display text-purple-400">{streak}</p>
           <p className="text-[9px] text-gray-400 font-mono uppercase mt-1">Streak</p>

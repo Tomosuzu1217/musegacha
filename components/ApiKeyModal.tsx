@@ -117,7 +117,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onSave, onClos
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-      <div className="card-cinematic rounded-xl w-full max-w-lg p-8 animate-spring-scale shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto">
+      <div className="card-cinematic rounded-xl w-full max-w-lg p-4 sm:p-8 animate-spring-scale shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold font-display uppercase tracking-tight mb-4">システム設定</h2>
 
         <div className="space-y-6">

@@ -8,7 +8,7 @@ interface QuestionCardProps {
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onToggleFavorite }) => {
   return (
-    <div className="-mx-4 w-[calc(100%+2rem)] py-10 px-6 flex flex-col items-center text-center card-spring group relative overflow-hidden card-cinematic rounded-xl border border-white/5 animate-spring-fade-up">
+    <div className="w-full py-10 px-6 flex flex-col items-center text-center card-spring group relative overflow-hidden card-cinematic rounded-xl border border-white/5 animate-spring-fade-up">
 
       {/* Favorite star */}
       {onToggleFavorite && (
